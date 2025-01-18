@@ -1,12 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import githubLogo from "/github.png";
 import reactLogo from "/react.svg";
-import viteLogo from "/vite.svg";
+import supabase from "./utils/supabase";
 import supabaseLogo from "/supabase.svg";
 import vercelLogo from "/vercel.svg";
-import githubLogo from "/github.png";
-import "./App.css";
+import viteLogo from "/vite.svg";
 
 function App() {
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    getTodos();
+  }, []);
+
+  async function getTodos() {
+    const { data } = await supabase.from("todos").select();
+
+    setTodos(data);
+  }
+
   return (
     <>
       <div>
@@ -37,6 +50,12 @@ function App() {
           <img src={githubLogo} className="logo github" alt="GitHub logo" />
         </a>
       </h2>
+
+      <div>
+        {todos?.map((todo) => (
+          <li key={todo.id}>{todo.task}</li>
+        ))}
+      </div>
       <p className="read-the-docs">Click on logos to learn more.</p>
     </>
   );
