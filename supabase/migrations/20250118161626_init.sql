@@ -13,6 +13,15 @@ create table todos (
 
 alter table todos enable row level security;
 
+create policy "TODO_INSERT_POLICY" on todos for
+    insert with check (auth.uid() = user_id);
+create policy "TODO_SELECT_POLICY" on todos for
+    select using (true);
+create policy "TODO_UPDATE_POLICY" on todos for
+    update using ((select auth.uid()) = user_id);
+create policy "TODO_DELETE_POLICY" on todos for
+    delete using ((select auth.uid()) = user_id);
+
 create view todos_public_view as
 select
   id,
@@ -23,10 +32,3 @@ select
     else null
   end as user_id
 from todos;
-
-create policy "TODO_INSERT_POLICY" on todos for
-    insert with check (auth.uid() = user_id);
-create policy "TODO_UPDATE_POLICY" on todos for
-    update using ((select auth.uid()) = user_id);
-create policy "TODO_DELETE_POLICY" on todos for
-    delete using ((select auth.uid()) = user_id);
