@@ -25,6 +25,8 @@ const Todo = ({ todo, updateTodo, deleteTodo }) => {
       ? formik.errors.todo
       : "Todo task details";
 
+  const isTodoDisabled = todo.user_id !== user?.id;
+
   return (
     <form onSubmit={formik.handleSubmit}>
       <TextField
@@ -32,7 +34,7 @@ const Todo = ({ todo, updateTodo, deleteTodo }) => {
         id="todo"
         name="todo"
         label="Todo Task"
-        disabled={todo.user_id !== user?.id}
+        disabled={isTodoDisabled}
         value={formik.values.todo}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
@@ -41,18 +43,14 @@ const Todo = ({ todo, updateTodo, deleteTodo }) => {
         size="small"
       />
 
-      <IconButton
-        aria-label="save"
-        disabled={todo.user_id !== user?.id}
-        type="submit"
-      >
+      <IconButton aria-label="save" disabled={isTodoDisabled} type="submit">
         <SaveIcon />
       </IconButton>
 
       <IconButton
         aria-label="delete"
         onClick={() => deleteTodo(todo.id)}
-        disabled={todo.user_id !== user?.id}
+        disabled={isTodoDisabled}
       >
         <DeleteIcon />
       </IconButton>
@@ -64,7 +62,7 @@ Todo.propTypes = {
   todo: PropTypes.shape({
     id: PropTypes.number.isRequired,
     task: PropTypes.string.isRequired,
-    user_id: PropTypes.string.isRequired,
+    user_id: PropTypes.string,
   }).isRequired,
   updateTodo: PropTypes.func.isRequired,
   deleteTodo: PropTypes.func.isRequired,

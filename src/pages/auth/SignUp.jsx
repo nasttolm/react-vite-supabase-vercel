@@ -1,15 +1,15 @@
+import { useNavigate } from "react-router";
 import AccountForm from "../../containers/AccountForm";
 import supabase from "../../utils/supabase";
 import toast from "react-hot-toast";
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
   const signUp = async (email, password) => {
     const result = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: import.meta.env.VITE_HOST,
-      },
     });
 
     if (result.data.user?.identities?.length === 0) {
@@ -18,6 +18,7 @@ const SignUp = () => {
       toast.success(
         "Welcome and please check your inbox to confirm your account!"
       );
+      navigate("/");
     }
   };
 

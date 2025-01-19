@@ -35,6 +35,7 @@ const Todos = () => {
 
   const deleteTodo = async (id) => {
     const result = await supabase.from("todos").delete().eq("id", id);
+
     setTodos(todos.filter((todo) => todo.id !== id));
 
     if (result.error) {
@@ -42,6 +43,8 @@ const Todos = () => {
     } else {
       toast.success("Todo task deleted succesfully");
     }
+
+    getTodos();
   };
 
   const updateTodo = async (id, updatedTask) => {
@@ -55,6 +58,8 @@ const Todos = () => {
     } else {
       toast.success("Todo task updated succesfully");
     }
+
+    getTodos();
   };
 
   if (loading) {

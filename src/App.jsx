@@ -29,18 +29,7 @@ function App() {
         </a>
         <p className="read-the-docs">Click on logos to learn more.</p>
       </div>
-      {/* <h2>
-        Template Project available on{" "}
-        <a
-          href="https://github.com/juancarlosjr97/react-vite-supabase-vercel"
-          target="_blank"
-        >
-          <img src={githubLogo} className="logo github" alt="GitHub logo" />
-        </a>
-      </h2> */}
       <Todos />
-
-      {/* <button onClick={}> Sign In </button> */}
     </>
   );
 }
