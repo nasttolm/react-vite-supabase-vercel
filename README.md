@@ -1,4 +1,4 @@
-# React Vite Supabase Vercel | Template Project
+# React Vite Supabase Vercel | Public Template Project
 
 This is a template project that demonstrates the usage of [React](https://react.dev/), [Vite](https://vite.dev/), [Supabase](https://supabase.com/), and [Vercel](https://vercel.com/).
 
@@ -41,7 +41,9 @@ Since Supabase requires a paid plan to enable GitHub and Supabase automated inte
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjuancarlosjr97%2Freact-vite-supabase-vercel&project-name=react-vite-supabase-vercel&repository-name=react-vite-supabase-vercel&demo-title=React%20Vite%20Supabase%20Vercel&demo-description=GitHub%20template%20project%20using%20React%20Vite%20Supabase%20deployed%20on%20Vercel&demo-url=https%3A%2F%2Freact-vite-supabase-vercel.vercel.app%2F&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6&external-id=https%3A%2F%2Fgithub.com%2Fjuancarlosjr97%2Freact-vite-supabase-vercel&skippable-integrations=1)
 
-During the Vercel deployment, the integration step will ask to link to the Supabase project created in [part 1](#supabase---part-1).
+The Vercel Deploymnent will fork the project and create a GitHub project.
+
+During the Vercel deployment, the integration step will ask for the link to the Supabase project created in [part 1](#supabase---part-1).
 
 ### Supabase Vercel Integration - Part 3
 
