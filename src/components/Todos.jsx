@@ -1,9 +1,10 @@
-import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
-import AddTodo from "./AddTodo";
 import Stack from "@mui/material/Stack";
-import supabase from "../utils/supabase";
 import toast from "react-hot-toast";
+
+import { useAuth } from "../hooks/useAuth";
+import AddTodo from "./AddTodo";
+import supabase from "../utils/supabase";
 import Todo from "./Todo";
 
 const Todos = () => {

@@ -1,4 +1,3 @@
-import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -10,6 +9,8 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
+
+import { useAuth } from "../hooks/useAuth";
 
 const pages = [
   { pageName: "Home", link: "/", protected: null },

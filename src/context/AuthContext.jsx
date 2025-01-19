@@ -1,6 +1,7 @@
-import { AuthContext } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+
+import { AuthContext } from "../hooks/useAuth";
 import supabase from "../utils/supabase";
 
 const AuthProvider = (props) => {

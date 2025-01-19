@@ -1,11 +1,12 @@
-import { todoValidationSchema } from "../utils/validation";
-import { useAuth } from "../hooks/useAuth";
-import { useFormik } from "formik";
 import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
-import PropTypes from "prop-types";
 import SaveIcon from "@mui/icons-material/Save";
+import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
+import PropTypes from "prop-types";
+import { useFormik } from "formik";
+
+import { useAuth } from "../hooks/useAuth";
+import { todoValidationSchema } from "../utils/validation";
 
 const Todo = ({ todo, updateTodo, deleteTodo }) => {
   const { user } = useAuth();

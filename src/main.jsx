@@ -1,3 +1,8 @@
+import { BrowserRouter, Route, Routes } from "react-router";
+import { createRoot } from "react-dom/client";
+import { StrictMode } from "react";
+import { Toaster } from "react-hot-toast";
+
 import "./index.css";
 import App from "./App.jsx";
 import AppBar from "./containers/AppBar";
@@ -5,10 +10,6 @@ import AuthProvider from "./context/AuthContext.jsx";
 import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
-import { createRoot } from "react-dom/client";
-import { StrictMode } from "react";
-import { Toaster } from "react-hot-toast";
-import { BrowserRouter, Route, Routes } from "react-router";
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -55,5 +56,5 @@ createRoot(document.getElementById("root")).render(
         <img src={githubLogo} className="logo github" alt="GitHub logo" />
       </a>
     </footer>
-  </div>,
+  </div>
 );
