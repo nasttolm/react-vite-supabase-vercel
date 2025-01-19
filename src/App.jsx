@@ -1,27 +1,15 @@
-import React, { useEffect, useState } from "react";
 import "./App.css";
-import githubLogo from "/github.png";
 import reactLogo from "/react.svg";
-import supabase from "./utils/supabase";
 import supabaseLogo from "/supabase.svg";
+import Todos from "./components/Todos";
 import vercelLogo from "/vercel.svg";
 import viteLogo from "/vite.svg";
 
 function App() {
-  const [todos, setTodos] = useState([]);
-
-  useEffect(() => {
-    getTodos();
-  }, []);
-
-  async function getTodos() {
-    const { data } = await supabase.from("todos").select();
-
-    setTodos(data);
-  }
-
   return (
     <>
+      <h1>React + Vite + Supabase + Vercel</h1>
+
       <div>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />
@@ -39,9 +27,9 @@ function App() {
         <a href="https://vercel.com/" target="_blank">
           <img src={vercelLogo} className="logo vercel" alt="React Supabase" />
         </a>
+        <p className="read-the-docs">Click on logos to learn more.</p>
       </div>
-      <h1>React + Vite + Supabase + Vercel</h1>
-      <h2>
+      {/* <h2>
         Template Project available on{" "}
         <a
           href="https://github.com/juancarlosjr97/react-vite-supabase-vercel"
@@ -49,14 +37,10 @@ function App() {
         >
           <img src={githubLogo} className="logo github" alt="GitHub logo" />
         </a>
-      </h2>
+      </h2> */}
+      <Todos />
 
-      <div>
-        {todos?.map((todo) => (
-          <li key={todo.id}>{todo.task}</li>
-        ))}
-      </div>
-      <p className="read-the-docs">Click on logos to learn more.</p>
+      {/* <button onClick={}> Sign In </button> */}
     </>
   );
 }

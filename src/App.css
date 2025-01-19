@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -18,10 +17,10 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 .logo.supabase:hover {
-  filter: drop-shadow(0 0 2em #61fba4aa);
+  filter: drop-shadow(0 0 2em #00f320b9);
 }
 .logo.vercel:hover {
-  filter: drop-shadow(0 0 2em #fff);
+  filter: drop-shadow(0 0 2em #000000);
 }
 
 .logo.github {
