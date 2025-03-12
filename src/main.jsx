@@ -10,6 +10,7 @@ import AuthProvider from "./context/AuthContext.jsx";
 import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
+import UpdatePassword from "./pages/auth/update-password"
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -35,6 +36,7 @@ createRoot(document.getElementById("root")).render(
               <Route index path="/" element={<App />} />
               <Route index path="/auth/sign-in" element={<SignIn />} />
               <Route index path="/auth/sign-up" element={<SignUp />} />
+              <Route path="/auth/update-password" element={<UpdatePassword />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>
