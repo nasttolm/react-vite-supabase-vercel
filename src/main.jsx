@@ -11,6 +11,7 @@ import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
 import UpdatePassword from "./pages/auth/update-password"
+import CreateRecipe from "./pages/create-recipe"
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -37,6 +38,7 @@ createRoot(document.getElementById("root")).render(
               <Route index path="/auth/sign-in" element={<SignIn />} />
               <Route index path="/auth/sign-up" element={<SignUp />} />
               <Route path="/auth/update-password" element={<UpdatePassword />} />
+              <Route path="/create-recipe" element={<CreateRecipe />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

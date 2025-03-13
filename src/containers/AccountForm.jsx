@@ -63,8 +63,6 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
     <div className="card">
       <div className="header">
         <div className="icon">
-        
-           
           <div className="logo">
               <img src={Logo} alt="logo" />
               </div>
