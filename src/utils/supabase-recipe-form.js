@@ -1,4 +1,5 @@
 import supabase from "./supabase"
+import { searchSpoonacularIngredients, getSpoonacularIngredientInfo } from "./spoonacular-api"
 
 // Function to upload recipe image to Supabase Storage
 export async function uploadRecipeImage(file) {
@@ -30,19 +31,81 @@ export async function uploadRecipeImage(file) {
   }
 }
 
-// Function to search ingredients from the ingredients table
+// Updated function to search ingredients from both local database and Spoonacular
 export async function searchIngredients(query) {
   try {
-    const { data, error } = await supabase
+    // If the query is empty, return an empty array
+    if (!query || query.trim().length === 0) {
+      return []
+    }
+
+    // Search in our database
+    const { data: localIngredients, error } = await supabase
       .from("ingredients")
-      .select("id, name, calories")
+      .select("id, name, calories, spoonacular_id")
       .ilike("name", `%${query}%`)
+      .order("name")
       .limit(10)
 
     if (error) throw error
-    return data
+
+    // Add source to local ingredients
+    const localResults = (localIngredients || []).map((ingredient) => ({
+      ...ingredient,
+      source: ingredient.spoonacular_id ? "spoonacular" : "local",
+    }))
+
+    // Get list of spoonacular_ids that already exist in local database
+    const existingSpoonacularIds = localIngredients
+      .filter(ing => ing.spoonacular_id)
+      .map(ing => ing.spoonacular_id)
+
+    // Search in Spoonacular API
+    const spoonacularResults = await searchSpoonacularIngredients(query, 5)
+
+    // Filter Spoonacular results to exclude those already in the database
+    const filteredSpoonacularResults = spoonacularResults.filter(item => {
+      const itemId = item.id.replace("spoonacular_", "")
+      return !existingSpoonacularIds.includes(itemId)
+    })
+
+    // Combine results
+    const combinedResults = [...localResults, ...filteredSpoonacularResults]
+
+    // Sort by relevance (starts with query, then alphabetically)
+    combinedResults.sort((a, b) => {
+      const aStartsWithQuery = a.name.toLowerCase().startsWith(query.toLowerCase())
+      const bStartsWithQuery = b.name.toLowerCase().startsWith(query.toLowerCase())
+
+      if (aStartsWithQuery && !bStartsWithQuery) return -1
+      if (!aStartsWithQuery && bStartsWithQuery) return 1
+
+      return a.name.localeCompare(b.name)
+    })
+
+    return combinedResults
   } catch (error) {
     console.error("Error searching ingredients:", error)
+    throw error
+  }
+}
+
+// New function to get ingredient information
+export async function getIngredientInfo(id) {
+  try {
+    // Check if the ingredient is from Spoonacular
+    if (id.toString().startsWith("spoonacular_")) {
+      return await getSpoonacularIngredientInfo(id)
+    }
+
+    // Otherwise get from our database
+    const { data, error } = await supabase.from("ingredients").select("id, name, calories").eq("id", id).single()
+
+    if (error) throw error
+
+    return { ...data, source: "local" }
+  } catch (error) {
+    console.error("Error fetching ingredient info:", error)
     throw error
   }
 }
@@ -68,6 +131,7 @@ export async function createIngredient({ name, calories }) {
       .insert({
         name,
         calories,
+        source: "user", // Mark as a user-created ingredient
       })
       .select()
       .single()
@@ -275,4 +339,3 @@ export async function getRecipeById(id) {
     throw error
   }
 }
-

@@ -227,7 +227,11 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Updated searchResultItem to support the new layout with source */
 .searchResultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 16px;
   cursor: pointer;
 }
@@ -258,6 +262,27 @@
   color: #ff5722;
 }
 
+/* Add styles for displaying ingredient sources */
+.resultContent {
+  flex: 1;
+}
+
+.resultSource {
+  font-size: 12px;
+  color: #ff5722;
+  background-color: #fff3f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* New style for calories note */
+.caloriesNote {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .formLayout {
     flex-direction: column;
@@ -276,4 +301,3 @@
     width: 100%;
   }
 }
-

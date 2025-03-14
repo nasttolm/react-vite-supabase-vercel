@@ -10,7 +10,10 @@ import {
   searchIngredients,
   createIngredient,
   getAllDiets,
+  getIngredientInfo,
 } from "../utils/supabase-recipe-form"
+import { saveSpoonacularIngredient } from "../utils/spoonacular-api"
+import supabase from "../utils/supabase"
 
 const CreateRecipe = () => {
   const navigate = useNavigate()
@@ -93,11 +96,34 @@ const CreateRecipe = () => {
   }, [searchIngredientQuery])
 
   // Handle selecting an ingredient from search results
-  const handleSelectIngredient = (ingredient) => {
-    setSelectedIngredient(ingredient)
-    setSearchIngredientQuery(ingredient.name)
-    setCalories(ingredient.calories.toString())
-    setSearchResults([])
+  const handleSelectIngredient = async (ingredient) => {
+    try {
+      // If the ingredient is from Spoonacular, we need to get detailed information
+      if (ingredient.source === "spoonacular") {
+        setIsLoading(true)
+
+        // Get detailed information, including calories
+        const detailedIngredient = await getIngredientInfo(ingredient.id)
+
+        // Set the selected ingredient with full information
+        setSelectedIngredient(detailedIngredient)
+        setSearchIngredientQuery(detailedIngredient.name)
+        setCalories(detailedIngredient.calories.toString())
+
+        setIsLoading(false)
+      } else {
+        // For local ingredients, keep as before
+        setSelectedIngredient(ingredient)
+        setSearchIngredientQuery(ingredient.name)
+        setCalories(ingredient.calories.toString())
+      }
+
+      setSearchResults([])
+    } catch (error) {
+      console.error("Error getting ingredient details:", error)
+      toast.error("Failed to get ingredient information")
+      setIsLoading(false)
+    }
   }
 
   // Handle adding an ingredient
@@ -113,6 +139,30 @@ const CreateRecipe = () => {
     }
 
     let ingredientToAdd = selectedIngredient
+
+    // If an ingredient from Spoonacular is selected, save it to our database
+    if (ingredientToAdd && ingredientToAdd.source === "spoonacular") {
+      try {
+        setIsCreatingIngredient(true)
+        const savedIngredient = await saveSpoonacularIngredient(ingredientToAdd, supabase)
+
+        // Update ID to local
+        ingredientToAdd = {
+          ...ingredientToAdd,
+          id: savedIngredient.id,
+          source: "local", // Now it's a local ingredient
+        }
+
+        toast.success(`Ingredient ${ingredientToAdd.name} saved to database`)
+      } catch (error) {
+        console.error("Error saving Spoonacular ingredient:", error)
+        toast.error("Failed to save ingredient")
+        setIsCreatingIngredient(false)
+        return
+      } finally {
+        setIsCreatingIngredient(false)
+      }
+    }
 
     // If no ingredient is selected, create a new one
     if (!ingredientToAdd) {
@@ -415,7 +465,16 @@ const CreateRecipe = () => {
                         className={styles.searchResultItem}
                         onClick={() => handleSelectIngredient(result)}
                       >
-                        {result.name} ({result.calories} kcal/100g)
+                        <div className={styles.resultContent}>
+                          {result.name} 
+                          {result.calories 
+                            ? `(${result.calories} kcal/100g)` 
+                            : result.source === "spoonacular" 
+                              ? <span className={styles.caloriesNote}>(calories will be available after selection)</span> 
+                              : ""
+                          }
+                        </div>
+                        {result.source === "spoonacular" && <div className={styles.resultSource}>Spoonacular</div>}
                       </div>
                     ))}
                   </div>
@@ -590,4 +649,3 @@ const CreateRecipe = () => {
 }
 
 export default CreateRecipe
-
