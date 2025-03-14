@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 import { Toaster } from "react-hot-toast";
 
+
 import "./index.css";
 import App from "./App.jsx";
 import AppBar from "./containers/AppBar";
@@ -12,6 +13,7 @@ import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
 import UpdatePassword from "./pages/auth/update-password"
 import CreateRecipe from "./pages/create-recipe"
+import RecipePage from "./pages/recipe-page"
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -39,6 +41,7 @@ createRoot(document.getElementById("root")).render(
               <Route index path="/auth/sign-up" element={<SignUp />} />
               <Route path="/auth/update-password" element={<UpdatePassword />} />
               <Route path="/create-recipe" element={<CreateRecipe />} />
+              <Route path="/recipes/:id" element={<RecipePage />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

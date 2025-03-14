@@ -1,11 +1,9 @@
-import { useNavigate } from "react-router";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router"
+import toast from "react-hot-toast"
 
-import AccountForm from "../../containers/AccountForm";
-import supabase from "../../utils/supabase";
-
-import "../../styles/styles.css" // Import the CSS file
-
+import AccountForm from "../../containers/AccountForm"
+import supabase from "../../utils/supabase"
+import styles from "../../styles/auth.module.css"
 
 const SignIn = () => {
   const navigate = useNavigate()
@@ -29,7 +27,6 @@ const SignIn = () => {
     }
   }
 
- 
   const signInWithFacebook = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -45,7 +42,7 @@ const SignIn = () => {
   }
 
   return (
-    <div className="container">
+    <div className={styles.container}>
       <AccountForm onSubmit={signIn} onFacebookAuth={signInWithFacebook} />
     </div>
   )
