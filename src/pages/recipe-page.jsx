@@ -94,6 +94,7 @@ const RecipePage = () => {
     name: item.ingredients.name,
     amount: `${item.grams}g`,
     calories: item.ingredients.calories,
+    grams: Number.parseFloat(item.grams),
   }))
 
   // Format dietary tags - using the same approach as ingredients
@@ -102,6 +103,19 @@ const RecipePage = () => {
 
   // Get category name - now directly from the recipe object
   const categoryName = recipe.categoryName || "Uncategorized"
+
+  // Calculate total calories
+  const totalCalories = formattedIngredients.reduce((sum, ingredient) => {
+    // Calculate calories for this ingredient: (calories per 100g * grams) / 100
+    const ingredientCalories = (ingredient.calories * ingredient.grams) / 100
+    return sum + ingredientCalories
+  }, 0)
+
+  // Calculate calories per serving
+  const caloriesPerServing = recipe.servings ? Math.round(totalCalories / recipe.servings) : 0
+
+  // Round total calories to whole number
+  const roundedTotalCalories = Math.round(totalCalories)
 
   return (
     <div className={`${globalStyles.body} ${styles.container}`}>
@@ -143,15 +157,31 @@ const RecipePage = () => {
       </div>
 
       <div className={styles.recipeContent}>
-        <div className={styles.ingredientsSection}>
-          <h2>Ingredients</h2>
-          <ul className={styles.ingredientsList}>
-            {formattedIngredients.map((ingredient, index) => (
-              <li key={index}>
-                {ingredient.amount} {ingredient.name} ({ingredient.calories} kcal/100g)
+        <div className={styles.leftColumn}>
+          <div className={styles.caloriesSection}>
+            <h2>Calories</h2>
+            <ul className={styles.caloriesList}>
+              <li>
+                <span className={styles.calorieLabel}>Total Calories:</span>
+                <span className={styles.calorieValue}>{roundedTotalCalories} kcal</span>
               </li>
-            ))}
-          </ul>
+              <li>
+                <span className={styles.calorieLabel}>Per Serving:</span>
+                <span className={styles.calorieValue}>{caloriesPerServing} kcal</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className={styles.ingredientsSection}>
+            <h2>Ingredients</h2>
+            <ul className={styles.ingredientsList}>
+              {formattedIngredients.map((ingredient, index) => (
+                <li key={index}>
+                  {ingredient.amount} {ingredient.name} ({ingredient.calories} kcal/100g)
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className={styles.recipeDetails}>
