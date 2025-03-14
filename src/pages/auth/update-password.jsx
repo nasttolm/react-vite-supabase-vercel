@@ -2,9 +2,10 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
 
-import supabase from "../../utils/supabase";
+import supabase from "../../utils/supabase"
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
+import styles from "../../styles/auth.module.css"
 
 const UpdatePassword = () => {
   const navigate = useNavigate()
@@ -61,10 +62,10 @@ const UpdatePassword = () => {
   }
 
   return (
-    <div className="container">
-      <div className="card">
-        <div className="header">
-          <div className="icon">
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.icon}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M5.5 12.5L10 17L18.5 7"
@@ -75,11 +76,11 @@ const UpdatePassword = () => {
               />
             </svg>
           </div>
-          <h1 className="title">Update Password</h1>
-          <p className="subtitle">Please enter your new password below.</p>
+          <h1 className={styles.title}>Update Password</h1>
+          <p className={styles.subtitle}>Please enter your new password below.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="form">
+        <form onSubmit={handleSubmit} className={styles.form}>
           <TextField
             fullWidth
             id="password"
@@ -89,7 +90,7 @@ const UpdatePassword = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             variant="outlined"
-            className="input"
+            className={styles.input}
           />
           <TextField
             fullWidth
@@ -100,19 +101,19 @@ const UpdatePassword = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             variant="outlined"
-            className="input"
+            className={styles.input}
           />
 
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
-          <Button fullWidth type="submit" variant="contained" disabled={loading} className="submit-button">
+          <Button fullWidth type="submit" variant="contained" disabled={loading} className={styles.submitButton}>
             {loading ? "Updating..." : "Update Password"}
           </Button>
         </form>
 
-        <div className="signup-text">
+        <div className={styles.signupText}>
           Remember your password?{" "}
-          <span className="signup-link" onClick={() => navigate("/auth/sign-in")} style={{ cursor: "pointer" }}>
+          <span className={styles.signupLink} onClick={() => navigate("/auth/sign-in")} style={{ cursor: "pointer" }}>
             Sign In
           </span>
         </div>

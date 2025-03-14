@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router"
+import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
-import "../styles/recipe-form-styles.css"
-import "../styles/styles.css"
-import Logo_big from "../../public/Logo_big.svg"
+import styles from "../styles/create-recipe.module.css"
+import "../styles/styles.module.css"
 import {
   uploadRecipeImage,
   createRecipe,
@@ -13,13 +12,8 @@ import {
   getAllDiets,
 } from "../utils/supabase-recipe-form"
 
-
 const CreateRecipe = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const queryParams = new URLSearchParams(location.search)
-  const editRecipeId = queryParams.get("edit")
-  const isEditMode = !!editRecipeId
 
   // State for form fields
   const [recipeName, setRecipeName] = useState("")
@@ -46,7 +40,6 @@ const CreateRecipe = () => {
   const [imageFile, setImageFile] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingIngredient, setIsCreatingIngredient] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(isEditMode)
 
   // Load categories when component mounts
   useEffect(() => {
@@ -79,67 +72,6 @@ const CreateRecipe = () => {
 
     loadDiets()
   }, [])
-
-  // Load recipe data if in edit mode
-  useEffect(() => {
-    async function loadRecipeData() {
-      if (!editRecipeId) return
-
-      try {
-        setInitialLoading(true)
-        const recipeData = await getRecipeById(editRecipeId)
-        console.log("Loaded recipe for editing:", recipeData)
-
-        // Populate form fields with recipe data
-        setRecipeName(recipeData.title || "")
-        setDescription(recipeData.description || "")
-        setCookingTime(recipeData.cooking_time?.toString() || "")
-        setServings(recipeData.servings?.toString() || "")
-        setCategory(recipeData.category_id?.toString() || "")
-        setSteps(recipeData.steps?.length > 0 ? recipeData.steps : [""])
-
-        // Set image if available
-        if (recipeData.image_url) {
-          setImage(recipeData.image_url)
-        }
-
-        // Set ingredients
-        if (recipeData.ingredients && recipeData.ingredients.length > 0) {
-          const formattedIngredients = recipeData.ingredients.map((item) => ({
-            id: item.ingredients.id,
-            name: item.ingredients.name,
-            grams: item.grams.toString(),
-            calories: item.ingredients.calories,
-          }))
-          setIngredients(formattedIngredients)
-        }
-
-        // Set dietary tags
-        if (recipeData.diets && recipeData.diets.length > 0) {
-          const formattedDiets = recipeData.diets
-            .map((item) => {
-              if (item.diets) {
-                return {
-                  id: item.diets.id,
-                  name: item.diets.name,
-                }
-              }
-              return null
-            })
-            .filter(Boolean)
-          setDietaryTags(formattedDiets)
-        }
-      } catch (error) {
-        console.error("Failed to load recipe for editing:", error)
-        toast.error("Failed to load recipe for editing")
-        navigate("/")
-      } finally {
-        setInitialLoading(false)
-      }
-    }
-
-    loadRecipeData()
-  }, [editRecipeId, navigate])
 
   // Search ingredients with debounce
   useEffect(() => {
@@ -307,7 +239,7 @@ const CreateRecipe = () => {
       return
     }
 
-    if (!isEditMode && !imageFile) {
+    if (!imageFile) {
       toast.error("Please add a recipe image")
       return
     }
@@ -330,124 +262,63 @@ const CreateRecipe = () => {
     setIsLoading(true)
 
     try {
-      console.log(`Starting recipe ${isEditMode ? "update" : "creation"} process`)
+      console.log("Starting recipe creation process")
 
-      // Upload image if selected (for new recipes or when changing image)
-      let imageUrl = image
+      // Upload image if selected
+      let imageUrl = null
       if (imageFile) {
         console.log("Uploading image file:", imageFile)
         imageUrl = await uploadRecipeImage(imageFile)
         console.log("Image uploaded successfully:", imageUrl)
       }
 
-      if (isEditMode) {
-        // Update existing recipe
-        console.log("Updating recipe with ID:", editRecipeId)
+      // Create recipe
+      const recipeData = {
+        name: recipeName,
+        description,
+        category,
+        imageUrl,
+        steps: steps.filter((step) => step.trim()),
+        ingredients,
+        diets: dietaryTags,
+        cooking_time: Number(cookingTime),
+        servings: Number(servings),
+      }
 
-        // Prepare ingredients data for update
-        const ingredientsData = ingredients.map((ing) => ({
-          id: ing.id,
-          grams: ing.grams,
-        }))
+      console.log("Creating recipe with data:", recipeData)
+      const recipe = await createRecipe(recipeData)
+      console.log("Recipe created successfully:", recipe)
+      toast.success("Recipe created successfully!")
 
-        // Prepare diets data for update
-        const dietsData = dietaryTags.map((diet) => ({
-          id: diet.id,
-        }))
-
-        console.log("Prepared ingredients data:", ingredientsData)
-        console.log("Prepared diets data:", dietsData)
-
-        const updateData = {
-          title: recipeName,
-          description,
-          category_id: category,
-          image_url: imageUrl,
-          steps: steps.filter((step) => step.trim()),
-          ingredients: ingredientsData,
-          diets: dietsData,
-          cooking_time: Number(cookingTime),
-          servings: Number(servings),
-        }
-
-        console.log("Sending update data:", updateData)
-
-        const recipe = await updateRecipe(editRecipeId, updateData)
-        console.log("Recipe updated successfully:", recipe)
-        toast.success("Recipe updated successfully!")
-
-        // Navigate to the recipe page
-        navigate(`/recipes/${editRecipeId}`)
+      // Navigate to the recipe page
+      if (recipe && recipe.id) {
+        navigate(`/recipes/${recipe.id}`)
       } else {
-        // Create new recipe
-        const recipeData = {
-          name: recipeName,
-          description,
-          category,
-          imageUrl,
-          steps: steps.filter((step) => step.trim()),
-          ingredients,
-          diets: dietaryTags,
-          cooking_time: Number(cookingTime),
-          servings: Number(servings),
-        }
-
-        console.log("Creating recipe with data:", recipeData)
-        const recipe = await createRecipe(recipeData)
-        console.log("Recipe created successfully:", recipe)
-        toast.success("Recipe created successfully!")
-
-        // Navigate to the recipe page
-        if (recipe && recipe.id) {
-          navigate(`/recipes/${recipe.id}`)
-        } else {
-          console.error("Recipe created but no ID returned")
-          toast.error("Recipe created but could not navigate to it")
-        }
+        console.error("Recipe created but no ID returned")
+        toast.error("Recipe created but could not navigate to it")
       }
     } catch (error) {
-      console.error(`Error ${isEditMode ? "updating" : "creating"} recipe:`, error)
-      toast.error(`Failed to ${isEditMode ? "update" : "create"} recipe: ${error.message || "Unknown error"}`)
+      console.error("Error creating recipe:", error)
+      toast.error(`Failed to create recipe: ${error.message || "Unknown error"}`)
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (initialLoading) {
-    return (
-      <div className="recipe-container">
-        <div className="logo-container">
-          <div className="logo">
-            <img src={Logo_big || "/placeholder.svg"} alt="logo_big" />
-          </div>
-        </div>
-        <div className="loading-container">
-          <p>Loading recipe data...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="recipe-container">
-      <div className="logo-container">
-        <div className="logo">
-          <img src={Logo_big || "/placeholder.svg"} alt="logo_big" />
-        </div>
-      </div>
+    <div className={styles.container}>
+      <h2 className={styles.pageTitle}>Create Recipe</h2>
 
-      <h2 className="page-title">{isEditMode ? "Edit Recipe" : "Create Recipe"}</h2>
-
-      <form onSubmit={handleSubmit} className="recipe-form">
-        <div className="form-layout">
-          <div className="form-left">
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.formLayout}>
+          <div className={styles.formLeft}>
             <input
               type="text"
               id="recipe-name"
               placeholder="Recipe name"
               value={recipeName}
               onChange={(e) => setRecipeName(e.target.value)}
-              className="input"
+              className={styles.input}
               required
             />
 
@@ -457,78 +328,78 @@ const CreateRecipe = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="input"
+              className={styles.textarea}
               required
             />
 
-            <div className="input-row">
-              <div className="input-group">
-                <label>Cooking Time (minutes)</label>
+            <div className={styles.inputRow}>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Cooking Time (minutes)</label>
                 <input
                   type="number"
                   id="cooking-time"
                   value={cookingTime}
                   onChange={(e) => setCookingTime(e.target.value)}
-                  className="input small-input"
+                  className={styles.smallInput}
                   min="0"
                   required
                 />
               </div>
-              <div className="input-group">
-                <label>Servings</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Servings</label>
                 <input
                   type="number"
                   id="servings"
                   value={servings}
                   onChange={(e) => setServings(e.target.value)}
-                  className="input small-input"
+                  className={styles.smallInput}
                   min="1"
                   required
                 />
               </div>
             </div>
 
-            <div className="input-row">
-              <div className="input-group">
-                <label>Gram</label>
+            <div className={styles.inputRow}>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Gram</label>
                 <input
                   type="number"
                   id="grams"
                   value={grams}
                   onChange={(e) => setGrams(e.target.value)}
-                  className="input small-input"
+                  className={styles.smallInput}
                   min="0"
                 />
               </div>
 
-              <div className="input-group">
-                <label>kcal per 100g</label>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>kcal per 100g</label>
                 <input
                   type="number"
                   id="calories"
                   value={calories}
                   onChange={(e) => setCalories(e.target.value)}
-                  className="input small-input"
+                  className={styles.smallInput}
                   min="0"
                   step="0.1"
                   placeholder="Calories"
                 />
               </div>
 
-              <div className="input-group ingredient-search">
-                <label>Search ingredient</label>
-                <div className="search-row">
+              <div className={`${styles.inputGroup} ${styles.ingredientSearch}`}>
+                <label className={styles.label}>Search ingredient</label>
+                <div className={styles.searchRow}>
                   <input
                     type="text"
                     id="search-ingredient"
                     placeholder="Search or create new"
                     value={searchIngredientQuery}
                     onChange={(e) => setSearchIngredientQuery(e.target.value)}
-                    className="input"
+                    className={styles.input}
                   />
                   <button
                     type="button"
-                    className="orange-button"
+                    className={styles.searchButton}
                     onClick={handleAddIngredient}
                     disabled={isCreatingIngredient || !searchIngredientQuery.trim() || !calories}
                   >
@@ -537,11 +408,11 @@ const CreateRecipe = () => {
                 </div>
 
                 {searchResults.length > 0 && (
-                  <div className="search-results">
+                  <div className={styles.searchResults}>
                     {searchResults.map((result) => (
                       <div
                         key={result.id}
-                        className="search-result-item"
+                        className={styles.searchResultItem}
                         onClick={() => handleSelectIngredient(result)}
                       >
                         {result.name} ({result.calories} kcal/100g)
@@ -550,8 +421,8 @@ const CreateRecipe = () => {
                   </div>
                 )}
                 {searchIngredientQuery.trim().length > 0 && searchResults.length === 0 && (
-                  <div className="search-results">
-                    <div className="search-result-item no-results">
+                  <div className={styles.searchResults}>
+                    <div className={`${styles.searchResultItem} ${styles.noResults}`}>
                       No ingredients found. Enter calories to create a new one.
                     </div>
                   </div>
@@ -559,29 +430,29 @@ const CreateRecipe = () => {
               </div>
             </div>
 
-            <div className="ingredients-list">
+            <div className={styles.ingredientsList}>
               {ingredients.map((ingredient, index) => (
-                <div key={index} className="ingredient-pill">
+                <div key={index} className={styles.ingredientPill}>
                   {ingredient.name}
                   <br />
                   {ingredient.grams}g, {ingredient.calories} kcal/100g
-                  <button type="button" className="remove-button" onClick={() => handleRemoveIngredient(index)}>
+                  <button type="button" className={styles.removeButton} onClick={() => handleRemoveIngredient(index)}>
                     ×
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="input-row">
-              <div className="input-group diet-search">
-                <label>Select dietary restriction</label>
-                <div className="search-row">
-                  <div className="select-container" style={{ flex: 1 }}>
+            <div className={styles.inputRow}>
+              <div className={`${styles.inputGroup} ${styles.ingredientSearch}`}>
+                <label className={styles.label}>Select dietary restriction</label>
+                <div className={styles.searchRow}>
+                  <div className={styles.selectContainer} style={{ flex: 1 }}>
                     <select
                       id="diet"
                       value={selectedDietId}
                       onChange={(e) => setSelectedDietId(e.target.value)}
-                      className="input"
+                      className={styles.select}
                     >
                       <option value="" disabled>
                         Select diet
@@ -598,7 +469,7 @@ const CreateRecipe = () => {
                         </option>
                       )}
                     </select>
-                    <div className="select-arrow">
+                    <div className={styles.selectArrow}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                           d="M6 9L12 15L18 9"
@@ -610,25 +481,25 @@ const CreateRecipe = () => {
                       </svg>
                     </div>
                   </div>
-                  <button type="button" className="orange-button" onClick={handleAddDietary} disabled={!selectedDietId}>
+                  <button type="button" className={styles.button} onClick={handleAddDietary} disabled={!selectedDietId}>
                     Add Dietary
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="dietary-tags">
+            <div className={styles.dietaryTags}>
               {dietaryTags.map((tag, index) => (
-                <div key={index} className="dietary-tag">
+                <div key={index} className={styles.dietaryTag}>
                   {tag.name}
-                  <button type="button" className="remove-button" onClick={() => handleRemoveDietary(index)}>
+                  <button type="button" className={styles.removeButton} onClick={() => handleRemoveDietary(index)}>
                     ×
                   </button>
                 </div>
               ))}
             </div>
 
-            <div className="select-container">
+            <div className={styles.selectContainer}>
               <select
                 id="category"
                 value={category}
@@ -637,7 +508,7 @@ const CreateRecipe = () => {
                   console.log("Selected category ID:", selectedCategoryId)
                   setCategory(selectedCategoryId)
                 }}
-                className="input"
+                className={styles.select}
                 required
               >
                 <option value="" disabled>
@@ -659,7 +530,7 @@ const CreateRecipe = () => {
                   </>
                 )}
               </select>
-              <div className="select-arrow">
+              <div className={styles.selectArrow}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M6 9L12 15L18 9"
@@ -680,17 +551,17 @@ const CreateRecipe = () => {
                 placeholder={`Step ${index + 1}`}
                 value={step}
                 onChange={(e) => handleStepChange(index, e.target.value)}
-                className="input"
+                className={styles.input}
                 required={index === 0} // At least first step is required
               />
             ))}
 
-            <button type="button" className="orange-button add-step-button" onClick={handleAddStep}>
+            <button type="button" className={styles.addStepButton} onClick={handleAddStep}>
               Add Step
             </button>
           </div>
 
-          <div className="form-right">
+          <div className={styles.formRight}>
             <input
               type="file"
               id="image-upload"
@@ -698,11 +569,11 @@ const CreateRecipe = () => {
               onChange={handleImageChange}
               style={{ display: "none" }}
             />
-            <div className="image-placeholder" onClick={handleImageUploadClick}>
+            <div className={styles.imagePlaceholder} onClick={handleImageUploadClick}>
               {image ? (
-                <img src={image || "/placeholder.svg"} alt="Recipe" className="recipe-image" />
+                <img src={image || "/placeholder.svg"} alt="Recipe" className={styles.recipeImage} />
               ) : (
-                <button type="button" className="orange-button add-image-button">
+                <button type="button" className={styles.addImageButton}>
                   Add Image
                 </button>
               )}
@@ -710,8 +581,8 @@ const CreateRecipe = () => {
           </div>
         </div>
 
-        <button type="submit" className="orange-button submit-button" disabled={isLoading}>
-          {isLoading ? (isEditMode ? "Updating..." : "Creating...") : isEditMode ? "Update Recipe" : "Create Recipe"}
+        <button type="submit" className={styles.submitButton} disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Recipe"}
         </button>
       </form>
     </div>

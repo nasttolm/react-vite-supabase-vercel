@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router"
 import toast from "react-hot-toast"
-import "../styles/recipe-page-styles.css"
-import "../styles/styles.css"
-import Logo_big from "../../public/Logo_big.svg"
+import styles from "../styles/recipe-page.module.css"
+import "../styles/styles.module.css"
 import { getRecipeById, deleteRecipe } from "../utils/supabase-recipe-page"
 import supabase from "../utils/supabase"
 
@@ -68,13 +67,8 @@ const RecipePage = () => {
 
   if (loading) {
     return (
-      <div className="recipe-container">
-        <div className="logo-container">
-          <div className="logo">
-            <img src={Logo_big || "/placeholder.svg"} alt="SafeBites" className="logo-image" />
-          </div>
-        </div>
-        <div className="loading-container">
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
           <p>Loading recipe...</p>
         </div>
       </div>
@@ -83,16 +77,11 @@ const RecipePage = () => {
 
   if (error || !recipe) {
     return (
-      <div className="recipe-container">
-        <div className="logo-container">
-          <div className="logo">
-            <img src={Logo_big || "/placeholder.svg"} alt="SafeBites" />
-          </div>
-        </div>
-        <div className="error-container">
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
           <h2>Error</h2>
           <p>{error || "Recipe not found"}</p>
-          <button className="orange-button" onClick={() => navigate("/")}>
+          <button className={styles.orangeButton} onClick={() => navigate("/")}>
             Back to Home
           </button>
         </div>
@@ -115,51 +104,37 @@ const RecipePage = () => {
   const categoryName = recipe.categoryName || "Uncategorized"
 
   return (
-    <div className="recipe-container">
-      <div className="logo-container">
-        <div className="logo">
-          <a
-            href="/"
-            onClick={(e) => {
-              e.preventDefault()
-              navigate("/")
-            }}
-          >
-            <img src={Logo_big || "/placeholder.svg"} alt="SafeBites" />
-          </a>
+    <div className={styles.container}>
+      {isCurrentUser && (
+        <div className={styles.recipeActions}>
+          <button className={styles.deleteButton} onClick={handleDeleteClick}>
+            Delete Recipe
+          </button>
         </div>
+      )}
 
-        {isCurrentUser && (
-          <div className="recipe-actions">
-            <button className="delete-button" onClick={handleDeleteClick}>
-              Delete Recipe
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="recipe-hero">
+      <div className={styles.recipeHero}>
         <img
           src={recipe.image_url || "/placeholder.svg?height=400&width=800"}
           alt={recipe.title}
-          className="recipe-hero-image"
+          className={styles.recipeHeroImage}
         />
       </div>
 
       {/* The title wrapper div around the title, meta, and tags */}
-      <div className="recipe-title-wrapper">
-        <h1 className="recipe-title">{recipe.title}</h1>
+      <div className={styles.recipeTitleWrapper}>
+        <h1 className={styles.recipeTitle}>{recipe.title}</h1>
 
-        <div className="recipe-meta">
+        <div className={styles.recipeMeta}>
           <span>Cooking Time: {recipe.cooking_time} minutes</span>
           <span>Serving: {recipe.servings} people</span>
           <span>Category: {categoryName}</span>
         </div>
 
         {dietaryTags.length > 0 && (
-          <div className="dietary-tags-container">
+          <div className={styles.dietaryTagsContainer}>
             {dietaryTags.map((tag, index) => (
-              <span key={index} className="dietary-tag">
+              <span key={index} className={styles.dietaryTag}>
                 {tag}
               </span>
             ))}
@@ -167,10 +142,10 @@ const RecipePage = () => {
         )}
       </div>
 
-      <div className="recipe-content">
-        <div className="ingredients-section">
+      <div className={styles.recipeContent}>
+        <div className={styles.ingredientsSection}>
           <h2>Ingredients</h2>
-          <ul className="ingredients-list">
+          <ul className={styles.ingredientsList}>
             {formattedIngredients.map((ingredient, index) => (
               <li key={index}>
                 {ingredient.amount} {ingredient.name} ({ingredient.calories} kcal/100g)
@@ -179,18 +154,18 @@ const RecipePage = () => {
           </ul>
         </div>
 
-        <div className="recipe-details">
-          <div className="description-section">
+        <div className={styles.recipeDetails}>
+          <div className={styles.descriptionSection}>
             <h2>Description</h2>
             <p>{recipe.description}</p>
           </div>
 
-          <div className="preparation-section">
+          <div className={styles.preparationSection}>
             <h2>Preparation</h2>
-            <ol className="steps-list">
+            <ol className={styles.stepsList}>
               {recipe.steps.map((step, index) => (
                 <li key={index}>
-                  <span className="step-number">Step {index + 1}:</span> {step}
+                  <span className={styles.stepNumber}>Step {index + 1}:</span> {step}
                 </li>
               ))}
             </ol>
@@ -200,15 +175,15 @@ const RecipePage = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <h3>Delete Recipe</h3>
             <p>Are you sure you want to delete this recipe? This action cannot be undone.</p>
-            <div className="modal-actions">
-              <button className="cancel-button" onClick={handleCancelDelete} disabled={deleteLoading}>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelButton} onClick={handleCancelDelete} disabled={deleteLoading}>
                 Cancel
               </button>
-              <button className="delete-button confirm-delete" onClick={handleConfirmDelete} disabled={deleteLoading}>
+              <button className={styles.confirmDelete} onClick={handleConfirmDelete} disabled={deleteLoading}>
                 {deleteLoading ? "Deleting..." : "Delete Recipe"}
               </button>
             </div>

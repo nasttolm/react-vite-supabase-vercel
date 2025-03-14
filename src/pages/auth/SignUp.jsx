@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router"
+import toast from "react-hot-toast"
 
-import AccountForm from "../../containers/AccountForm";
-import supabase from "../../utils/supabase";
-import "../../styles/auth-styles.css" 
+import AccountForm from "../../containers/AccountForm"
+import supabase from "../../utils/supabase"
+import styles from "../../styles/auth.module.css"
 
 const SignUp = () => {
   const navigate = useNavigate()
@@ -42,7 +42,7 @@ const SignUp = () => {
   }
 
   return (
-    <div className="container">
+    <div className={styles.container}>
       <AccountForm onSubmit={signUp} onFacebookAuth={signUpWithFacebook} isSignUp={true} />
     </div>
   )
