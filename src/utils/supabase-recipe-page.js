@@ -11,7 +11,7 @@ export async function getRecipeById(id) {
     let categoryName = "Uncategorized"
     if (recipe.category_id) {
       const { data: category, error: categoryError } = await supabase
-        .from("category") // Corrected table name
+        .from("category")
         .select("name")
         .eq("id", recipe.category_id)
         .single()
@@ -38,7 +38,7 @@ export async function getRecipeById(id) {
 
     if (ingredientsError) throw ingredientsError
 
-    // Get the recipe diets with their details from the diets table - using the same approach as ingredients
+    // Get the recipe diets with their details from the diets table
     const { data: diets, error: dietsError } = await supabase
       .from("recipe_diets")
       .select(`
@@ -52,20 +52,29 @@ export async function getRecipeById(id) {
 
     if (dietsError) {
       console.error("Error fetching recipe diets:", dietsError)
-      // Continue without diets if there's an error
     }
 
-    // Log the results for debugging
-    console.log("Recipe:", recipe)
-    console.log("Category Name:", categoryName)
-    console.log("Ingredients:", ingredients)
-    console.log("Diets:", diets)
+    // Check if recipe is favorited by current user
+    const { data: user } = await supabase.auth.getUser()
+    let isFavorited = false
+
+    if (user?.user) {
+      const { data: favorite } = await supabase
+        .from("favorites")
+        .select("id")
+        .eq("recipe_id", id)
+        .eq("user_id", user.user.id)
+        .single()
+
+      isFavorited = !!favorite
+    }
 
     return {
       ...recipe,
       categoryName,
       ingredients,
       diets,
+      isFavorited,
     }
   } catch (error) {
     console.error("Error fetching recipe:", error)
@@ -117,6 +126,43 @@ export async function deleteRecipe(id) {
     return true
   } catch (error) {
     console.error("Error deleting recipe:", error)
+    throw error
+  }
+}
+
+export async function toggleFavorite(recipeId) {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error("User not authenticated")
+    }
+
+    // Check if recipe is already favorited
+    const { data: existingFavorite } = await supabase
+      .from("favorites")
+      .select("id")
+      .eq("recipe_id", recipeId)
+      .eq("user_id", user.id)
+      .single()
+
+    if (existingFavorite) {
+      // Remove from favorites
+      const { error: deleteError } = await supabase.from("favorites").delete().eq("id", existingFavorite.id)
+
+      if (deleteError) throw deleteError
+      return false // Return false to indicate recipe is no longer favorited
+    } else {
+      // Add to favorites
+      const { error: insertError } = await supabase.from("favorites").insert({ recipe_id: recipeId, user_id: user.id })
+
+      if (insertError) throw insertError
+      return true // Return true to indicate recipe is now favorited
+    }
+  } catch (error) {
+    console.error("Error toggling favorite:", error)
     throw error
   }
 }

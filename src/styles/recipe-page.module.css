@@ -41,12 +41,12 @@
 
 .deleteButton {
   composes: button;
-  background-color: #f44336;
+  background-color: #ff5722;
   color: white;
 }
 
 .deleteButton:hover {
-  background-color: #d32f2f;
+  background-color: #e64a19;
 }
 
 /* Hero image section */
@@ -73,12 +73,45 @@
   align-items: center;
 }
 
+.titleWithFavorite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .recipeTitle {
   font-size: 42px;
   font-weight: 600;
   color: #ff5722;
-  margin: 0 0 16px 0;
+  margin: 0;
   text-align: center;
+}
+
+.favoriteHeart {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #d9d9d9;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.favoriteHeart:hover {
+  transform: scale(1.1);
+}
+
+.favoriteHeart.favorited {
+  color: #ff5722;
+}
+
+.loadingHeart {
+  opacity: 0.5;
 }
 
 .recipeMeta {
@@ -368,6 +401,14 @@
     margin-top: 16px;
     width: 100%;
     justify-content: space-between;
+  }
+
+  .titleWithFavorite {
+    gap: 8px;
+  }
+
+  .favoriteHeart {
+    font-size: 28px;
   }
 }
 

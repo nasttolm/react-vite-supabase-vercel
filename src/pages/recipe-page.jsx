@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router"
 import toast from "react-hot-toast"
 import styles from "../styles/recipe-page.module.css"
 import globalStyles from "../styles/styles.module.css"
-import { getRecipeById, deleteRecipe } from "../utils/supabase-recipe-page"
+import { getRecipeById, deleteRecipe, toggleFavorite } from "../utils/supabase-recipe-page"
 import supabase from "../utils/supabase"
 
 const RecipePage = () => {
@@ -15,6 +15,8 @@ const RecipePage = () => {
   const [isCurrentUser, setIsCurrentUser] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   useEffect(() => {
     async function loadRecipe() {
@@ -23,6 +25,7 @@ const RecipePage = () => {
         const recipeData = await getRecipeById(id)
         console.log("Loaded recipe:", recipeData)
         setRecipe(recipeData)
+        setIsFavorited(recipeData.isFavorited)
 
         // Check if the current user is the owner of the recipe
         const { data } = await supabase.auth.getUser()
@@ -42,6 +45,20 @@ const RecipePage = () => {
       loadRecipe()
     }
   }, [id])
+
+  const handleFavoriteClick = async () => {
+    try {
+      setFavoriteLoading(true)
+      const isNowFavorited = await toggleFavorite(id)
+      setIsFavorited(isNowFavorited)
+      toast.success(isNowFavorited ? "Added to favorites" : "Removed from favorites")
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+      toast.error("Failed to update favorites")
+    } finally {
+      setFavoriteLoading(false)
+    }
+  }
 
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true)
@@ -119,13 +136,13 @@ const RecipePage = () => {
 
   return (
     <div className={`${globalStyles.body} ${styles.container}`}>
-      {isCurrentUser && (
-        <div className={styles.recipeActions}>
+      <div className={styles.recipeActions}>
+        {isCurrentUser && (
           <button className={styles.deleteButton} onClick={handleDeleteClick}>
             Delete Recipe
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className={styles.recipeHero}>
         <img
@@ -137,7 +154,17 @@ const RecipePage = () => {
 
       {/* The title wrapper div around the title, meta, and tags */}
       <div className={styles.recipeTitleWrapper}>
-        <h1 className={styles.recipeTitle}>{recipe.title}</h1>
+        <div className={styles.titleWithFavorite}>
+          <h1 className={styles.recipeTitle}>{recipe.title}</h1>
+          <button
+            className={`${styles.favoriteHeart} ${isFavorited ? styles.favorited : ""}`}
+            onClick={handleFavoriteClick}
+            disabled={favoriteLoading}
+            aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+          >
+            {favoriteLoading ? <span className={styles.loadingHeart}>❤</span> : <span>❤</span>}
+          </button>
+        </div>
 
         <div className={styles.recipeMeta}>
           <span>Cooking Time: {recipe.cooking_time} minutes</span>
