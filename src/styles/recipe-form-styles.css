@@ -1,16 +1,10 @@
-/* Base styles */
-body {
-  background-color: #ffffff;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #000000;
-}
-
 /* Recipe page specific styles */
 .recipe-container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .logo-container {
@@ -25,16 +19,13 @@ body {
   margin-right: 8px;
 }
 
-.brand-name {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-}
-
 .page-title {
   font-size: 32px;
   font-weight: 600;
   margin: 24px 0;
+  text-align: left;   
+  display: block;      
+  width: 100%;         
 }
 
 .recipe-form {
@@ -93,7 +84,7 @@ textarea.input {
   font-size: 14px;
   margin-bottom: 4px;
   color: #5e5e5e;
-  text-align: center; /* Center the label text */
+  text-align: center;
 }
 
 .small-input {
@@ -113,35 +104,14 @@ textarea.input {
 .search-row {
   display: flex;
   gap: 8px;
-  align-items: stretch; /* Make all items stretch to the same height */
+  align-items: stretch;
 }
 
 .search-row .orange-button {
-  min-width: 120px; /* Set a minimum width for the buttons */
+  min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.orange-button {
-  background-color: #ff5722;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 16px;
-  font-size: 16px;
-  cursor: pointer;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.orange-button:hover {
-  background-color: #e64a19;
-}
-
-.orange-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
 }
 
 .ingredients-list {
@@ -233,7 +203,7 @@ textarea.input {
   font-size: 18px;
 }
 
-/* Updated search results positioning */
+/* Search results */
 .search-results {
   position: absolute;
   z-index: 10;
@@ -243,7 +213,7 @@ textarea.input {
   max-height: 200px;
   overflow-y: auto;
   width: 100%;
-  top: 100%; /* Position below the input */
+  top: 100%;
   left: 0;
   margin-top: 4px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -278,5 +248,24 @@ textarea.input {
 
 .remove-button:hover {
   color: #ff5722;
+}
+
+@media (max-width: 768px) {
+  .form-layout {
+    flex-direction: column;
+  }
+
+  .form-right {
+    width: 100%;
+    order: -1;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  .small-input {
+    width: 100%;
+  }
 }
 

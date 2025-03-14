@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router"
-import toast from "react-hot-toast" 
+import { useNavigate, useLocation } from "react-router"
+import toast from "react-hot-toast"
+import "../styles/recipe-form-styles.css"
 import "../styles/styles.css"
-import "../styles/recipe-styles.css" 
 import Logo_big from "../../public/Logo_big.svg"
 import {
   uploadRecipeImage,
@@ -11,11 +11,15 @@ import {
   searchIngredients,
   createIngredient,
   getAllDiets,
-} from "../utils/supabase-recipes"
+} from "../utils/supabase-recipe-form"
 
 
 const CreateRecipe = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const queryParams = new URLSearchParams(location.search)
+  const editRecipeId = queryParams.get("edit")
+  const isEditMode = !!editRecipeId
 
   // State for form fields
   const [recipeName, setRecipeName] = useState("")
@@ -42,6 +46,7 @@ const CreateRecipe = () => {
   const [imageFile, setImageFile] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingIngredient, setIsCreatingIngredient] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(isEditMode)
 
   // Load categories when component mounts
   useEffect(() => {
@@ -74,6 +79,67 @@ const CreateRecipe = () => {
 
     loadDiets()
   }, [])
+
+  // Load recipe data if in edit mode
+  useEffect(() => {
+    async function loadRecipeData() {
+      if (!editRecipeId) return
+
+      try {
+        setInitialLoading(true)
+        const recipeData = await getRecipeById(editRecipeId)
+        console.log("Loaded recipe for editing:", recipeData)
+
+        // Populate form fields with recipe data
+        setRecipeName(recipeData.title || "")
+        setDescription(recipeData.description || "")
+        setCookingTime(recipeData.cooking_time?.toString() || "")
+        setServings(recipeData.servings?.toString() || "")
+        setCategory(recipeData.category_id?.toString() || "")
+        setSteps(recipeData.steps?.length > 0 ? recipeData.steps : [""])
+
+        // Set image if available
+        if (recipeData.image_url) {
+          setImage(recipeData.image_url)
+        }
+
+        // Set ingredients
+        if (recipeData.ingredients && recipeData.ingredients.length > 0) {
+          const formattedIngredients = recipeData.ingredients.map((item) => ({
+            id: item.ingredients.id,
+            name: item.ingredients.name,
+            grams: item.grams.toString(),
+            calories: item.ingredients.calories,
+          }))
+          setIngredients(formattedIngredients)
+        }
+
+        // Set dietary tags
+        if (recipeData.diets && recipeData.diets.length > 0) {
+          const formattedDiets = recipeData.diets
+            .map((item) => {
+              if (item.diets) {
+                return {
+                  id: item.diets.id,
+                  name: item.diets.name,
+                }
+              }
+              return null
+            })
+            .filter(Boolean)
+          setDietaryTags(formattedDiets)
+        }
+      } catch (error) {
+        console.error("Failed to load recipe for editing:", error)
+        toast.error("Failed to load recipe for editing")
+        navigate("/")
+      } finally {
+        setInitialLoading(false)
+      }
+    }
+
+    loadRecipeData()
+  }, [editRecipeId, navigate])
 
   // Search ingredients with debounce
   useEffect(() => {
@@ -241,7 +307,7 @@ const CreateRecipe = () => {
       return
     }
 
-    if (!imageFile) {
+    if (!isEditMode && !imageFile) {
       toast.error("Please add a recipe image")
       return
     }
@@ -264,57 +330,102 @@ const CreateRecipe = () => {
     setIsLoading(true)
 
     try {
-      console.log("Starting recipe creation process")
+      console.log(`Starting recipe ${isEditMode ? "update" : "creation"} process`)
 
-      // Upload image if selected
-      let imageUrl = null
+      // Upload image if selected (for new recipes or when changing image)
+      let imageUrl = image
       if (imageFile) {
         console.log("Uploading image file:", imageFile)
         imageUrl = await uploadRecipeImage(imageFile)
         console.log("Image uploaded successfully:", imageUrl)
       }
 
-      // Create recipe
-      console.log("Creating recipe with data:", {
-        name: recipeName,
-        description,
-        category,
-        imageUrl,
-        steps: steps.filter((step) => step.trim()),
-        ingredients,
-        diets: dietaryTags,
-        cooking_time: Number(cookingTime),
-        servings: Number(servings),
-      })
+      if (isEditMode) {
+        // Update existing recipe
+        console.log("Updating recipe with ID:", editRecipeId)
 
-      const recipe = await createRecipe({
-        name: recipeName,
-        description,
-        category,
-        imageUrl,
-        steps: steps.filter((step) => step.trim()),
-        ingredients,
-        diets: dietaryTags,
-        cooking_time: Number(cookingTime),
-        servings: Number(servings),
-      })
+        // Prepare ingredients data for update
+        const ingredientsData = ingredients.map((ing) => ({
+          id: ing.id,
+          grams: ing.grams,
+        }))
 
-      console.log("Recipe created successfully:", recipe)
-      toast.success("Recipe created successfully!")
+        // Prepare diets data for update
+        const dietsData = dietaryTags.map((diet) => ({
+          id: diet.id,
+        }))
 
-      // Navigate to the recipe page
-      if (recipe && recipe.id) {
-        navigate(`/recipes/${recipe.id}`)
+        console.log("Prepared ingredients data:", ingredientsData)
+        console.log("Prepared diets data:", dietsData)
+
+        const updateData = {
+          title: recipeName,
+          description,
+          category_id: category,
+          image_url: imageUrl,
+          steps: steps.filter((step) => step.trim()),
+          ingredients: ingredientsData,
+          diets: dietsData,
+          cooking_time: Number(cookingTime),
+          servings: Number(servings),
+        }
+
+        console.log("Sending update data:", updateData)
+
+        const recipe = await updateRecipe(editRecipeId, updateData)
+        console.log("Recipe updated successfully:", recipe)
+        toast.success("Recipe updated successfully!")
+
+        // Navigate to the recipe page
+        navigate(`/recipes/${editRecipeId}`)
       } else {
-        console.error("Recipe created but no ID returned")
-        toast.error("Recipe created but could not navigate to it")
+        // Create new recipe
+        const recipeData = {
+          name: recipeName,
+          description,
+          category,
+          imageUrl,
+          steps: steps.filter((step) => step.trim()),
+          ingredients,
+          diets: dietaryTags,
+          cooking_time: Number(cookingTime),
+          servings: Number(servings),
+        }
+
+        console.log("Creating recipe with data:", recipeData)
+        const recipe = await createRecipe(recipeData)
+        console.log("Recipe created successfully:", recipe)
+        toast.success("Recipe created successfully!")
+
+        // Navigate to the recipe page
+        if (recipe && recipe.id) {
+          navigate(`/recipes/${recipe.id}`)
+        } else {
+          console.error("Recipe created but no ID returned")
+          toast.error("Recipe created but could not navigate to it")
+        }
       }
     } catch (error) {
-      console.error("Error creating recipe:", error)
-      toast.error(`Failed to create recipe: ${error.message || "Unknown error"}`)
+      console.error(`Error ${isEditMode ? "updating" : "creating"} recipe:`, error)
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} recipe: ${error.message || "Unknown error"}`)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="recipe-container">
+        <div className="logo-container">
+          <div className="logo">
+            <img src={Logo_big || "/placeholder.svg"} alt="logo_big" />
+          </div>
+        </div>
+        <div className="loading-container">
+          <p>Loading recipe data...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -325,7 +436,7 @@ const CreateRecipe = () => {
         </div>
       </div>
 
-      <h2 className="page-title">Create Recipe</h2>
+      <h2 className="page-title">{isEditMode ? "Edit Recipe" : "Create Recipe"}</h2>
 
       <form onSubmit={handleSubmit} className="recipe-form">
         <div className="form-layout">
@@ -600,7 +711,7 @@ const CreateRecipe = () => {
         </div>
 
         <button type="submit" className="orange-button submit-button" disabled={isLoading}>
-          {isLoading ? "Creating..." : "Create Recipe"}
+          {isLoading ? (isEditMode ? "Updating..." : "Creating...") : isEditMode ? "Update Recipe" : "Create Recipe"}
         </button>
       </form>
     </div>

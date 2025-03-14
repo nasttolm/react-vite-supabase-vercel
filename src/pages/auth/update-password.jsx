@@ -5,7 +5,6 @@ import toast from "react-hot-toast"
 import supabase from "../../utils/supabase";
 import Button from "@mui/material/Button"
 import TextField from "@mui/material/TextField"
-import "../../styles/styles.css"
 
 const UpdatePassword = () => {
   const navigate = useNavigate()

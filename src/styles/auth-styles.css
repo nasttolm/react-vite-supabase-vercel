@@ -1,0 +1,208 @@
+body {
+  background-color: #f9fafb;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Header and icon */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Facebook button */
+.facebook-button {
+  width: 100%;
+  height: 48px;
+  margin-bottom: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.facebook-button:hover {
+  background-color: #f9fafb;
+}
+
+.facebook-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.facebook-icon {
+  position: absolute;
+  left: 16px;
+  color: #1877f2;
+}
+
+/* OR divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.divider-line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+.divider-text {
+  padding: 0 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  margin-bottom: 16px;
+}
+
+.submit-button {
+  background-color: #ff5722 !important;
+  color: white !important;
+  height: 48px;
+  text-transform: none !important;
+  font-weight: 500 !important;
+}
+
+.submit-button:hover {
+  background-color: #e64a19 !important;
+}
+
+/* Sign up link */
+.signup-text {
+  margin-top: 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.signup-link {
+  color: black;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+/* Material UI overrides */
+.MuiOutlinedInput-root {
+  border-radius: 4px !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: #e5e7eb !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #ff5722 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #ff5722 !important;
+  border-width: 1px !important;
+}
+
+.MuiFormHelperText-root {
+  margin-left: 0 !important;
+  margin-top: 4px !important;
+}
+
+/* Forgot password link */
+.forgot-password {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.forgot-password-link {
+  color: #6b7280;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  color: #ff5722;
+  text-decoration: underline;
+}
+
+/* Reset password form */
+.reset-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reset-text {
+  color: #6b7280;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.back-to-login {
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* Error message */
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  margin-bottom: 16px;
+}

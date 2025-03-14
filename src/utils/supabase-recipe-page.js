@@ -1,0 +1,123 @@
+import supabase from "./supabase"
+
+export async function getRecipeById(id) {
+  try {
+    // Get the recipe basic info
+    const { data: recipe, error: recipeError } = await supabase.from("recipes").select("*").eq("id", id).single()
+
+    if (recipeError) throw recipeError
+
+    // Get the category name separately - using the correct table name "category"
+    let categoryName = "Uncategorized"
+    if (recipe.category_id) {
+      const { data: category, error: categoryError } = await supabase
+        .from("category") // Corrected table name
+        .select("name")
+        .eq("id", recipe.category_id)
+        .single()
+
+      if (!categoryError && category) {
+        categoryName = category.name
+      } else {
+        console.error("Error fetching category:", categoryError)
+      }
+    }
+
+    // Get the recipe ingredients with their details from the ingredients table
+    const { data: ingredients, error: ingredientsError } = await supabase
+      .from("recipe_ingredients")
+      .select(`
+        grams,
+        ingredients:ingredient_id (
+          id,
+          name,
+          calories
+        )
+      `)
+      .eq("recipe_id", id)
+
+    if (ingredientsError) throw ingredientsError
+
+    // Get the recipe diets with their details from the diets table - using the same approach as ingredients
+    const { data: diets, error: dietsError } = await supabase
+      .from("recipe_diets")
+      .select(`
+        diet_id,
+        diets:diet_id (
+          id,
+          name
+        )
+      `)
+      .eq("recipe_id", id)
+
+    if (dietsError) {
+      console.error("Error fetching recipe diets:", dietsError)
+      // Continue without diets if there's an error
+    }
+
+    // Log the results for debugging
+    console.log("Recipe:", recipe)
+    console.log("Category Name:", categoryName)
+    console.log("Ingredients:", ingredients)
+    console.log("Diets:", diets)
+
+    return {
+      ...recipe,
+      categoryName,
+      ingredients,
+      diets,
+    }
+  } catch (error) {
+    console.error("Error fetching recipe:", error)
+    throw error
+  }
+}
+
+export async function deleteRecipe(id) {
+  try {
+    // Get current user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error("User not authenticated")
+    }
+
+    // Check if the user owns this recipe
+    const { data: recipe, error: recipeError } = await supabase.from("recipes").select("user_id").eq("id", id).single()
+
+    if (recipeError) throw recipeError
+
+    if (recipe.user_id !== user.id) {
+      throw new Error("You don't have permission to delete this recipe")
+    }
+
+    // Delete recipe ingredients
+    const { error: ingredientsError } = await supabase.from("recipe_ingredients").delete().eq("recipe_id", id)
+
+    if (ingredientsError) {
+      console.error("Error deleting recipe ingredients:", ingredientsError)
+      throw ingredientsError
+    }
+
+    // Delete recipe diets
+    const { error: dietsError } = await supabase.from("recipe_diets").delete().eq("recipe_id", id)
+
+    if (dietsError) {
+      console.error("Error deleting recipe diets:", dietsError)
+      throw dietsError
+    }
+
+    // Delete the recipe itself
+    const { error: deleteError } = await supabase.from("recipes").delete().eq("id", id)
+
+    if (deleteError) throw deleteError
+
+    return true
+  } catch (error) {
+    console.error("Error deleting recipe:", error)
+    throw error
+  }
+}
+

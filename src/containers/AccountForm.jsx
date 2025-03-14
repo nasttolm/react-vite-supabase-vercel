@@ -3,7 +3,7 @@ import * as yup from "yup";
 import Button from "@mui/material/Button";
 import PropTypes from "prop-types";
 import TextField from "@mui/material/TextField";
-import "../styles/styles.css"
+import "../styles/auth-styles.css"
 import Logo from "../../public/Logo.svg"
 import { useNavigate } from "react-router"
 import { useState } from "react"

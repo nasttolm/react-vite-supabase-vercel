@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 import AccountForm from "../../containers/AccountForm";
 import supabase from "../../utils/supabase";
-import "../../styles/styles.css" // Import the CSS file
+import "../../styles/auth-styles.css" 
 
 const SignUp = () => {
   const navigate = useNavigate()
