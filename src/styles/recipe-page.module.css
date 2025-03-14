@@ -155,25 +155,59 @@
   margin-bottom: 32px;
 }
 
-.descriptionSection h2,
 .preparationSection h2 {
-  font-size: 24px;
+  font-size: 32px;
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
+}
+
+.descriptionSection h2 {
+  font-size: 32px;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
+}
+
+.descriptionSection p {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+  text-align: left;
 }
 
 .stepsList {
-  padding-left: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
 }
 
 .stepsList li {
-  margin-bottom: 16px;
-  line-height: 1.6;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: flex-start;
 }
 
 .stepNumber {
   color: #ff5722;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 16px;
+  min-width: 70px;
+  text-align: left;
+}
+
+.stepText {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+  text-align: left;
+  flex: 1;
 }
 
 /* Loading and error states */

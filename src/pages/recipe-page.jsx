@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router"
 import toast from "react-hot-toast"
 import styles from "../styles/recipe-page.module.css"
-import "../styles/styles.module.css"
+import globalStyles from "../styles/styles.module.css"
 import { getRecipeById, deleteRecipe } from "../utils/supabase-recipe-page"
 import supabase from "../utils/supabase"
 
@@ -67,7 +67,7 @@ const RecipePage = () => {
 
   if (loading) {
     return (
-      <div className={styles.container}>
+      <div className={`${globalStyles.body} ${styles.container}`}>
         <div className={styles.loadingContainer}>
           <p>Loading recipe...</p>
         </div>
@@ -77,7 +77,7 @@ const RecipePage = () => {
 
   if (error || !recipe) {
     return (
-      <div className={styles.container}>
+      <div className={`${globalStyles.body} ${styles.container}`}>
         <div className={styles.errorContainer}>
           <h2>Error</h2>
           <p>{error || "Recipe not found"}</p>
@@ -104,7 +104,7 @@ const RecipePage = () => {
   const categoryName = recipe.categoryName || "Uncategorized"
 
   return (
-    <div className={styles.container}>
+    <div className={`${globalStyles.body} ${styles.container}`}>
       {isCurrentUser && (
         <div className={styles.recipeActions}>
           <button className={styles.deleteButton} onClick={handleDeleteClick}>
@@ -162,13 +162,14 @@ const RecipePage = () => {
 
           <div className={styles.preparationSection}>
             <h2>Preparation</h2>
-            <ol className={styles.stepsList}>
+            <div className={styles.stepsList}>
               {recipe.steps.map((step, index) => (
-                <li key={index}>
-                  <span className={styles.stepNumber}>Step {index + 1}:</span> {step}
-                </li>
+                <div key={index} className={styles.stepItem}>
+                  <span className={styles.stepNumber}>Step {index + 1}: </span>
+                  <span className={styles.stepText}>{step}</span>
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </div>
       </div>
