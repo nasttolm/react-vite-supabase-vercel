@@ -1,0 +1,282 @@
+/* Base styles */
+body {
+  background-color: #ffffff;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #000000;
+}
+
+/* Recipe page specific styles */
+.recipe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-image {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+}
+
+.brand-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 24px 0;
+}
+
+.recipe-form {
+  width: 100%;
+}
+
+.form-layout {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.form-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.form-right {
+  width: 400px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ff5722;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.input-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #5e5e5e;
+  text-align: center; /* Center the label text */
+}
+
+.small-input {
+  width: 120px;
+}
+
+.ingredient-search {
+  flex: 1;
+  position: relative;
+}
+
+.diet-search {
+  flex: 1;
+  position: relative;
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch; /* Make all items stretch to the same height */
+}
+
+.search-row .orange-button {
+  min-width: 120px; /* Set a minimum width for the buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orange-button {
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.orange-button:hover {
+  background-color: #e64a19;
+}
+
+.orange-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.ingredients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ingredient-pill {
+  background-color: #d9d9d9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  position: relative;
+  padding-right: 24px;
+}
+
+.dietary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dietary-tag {
+  background-color: #d9d9d9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  position: relative;
+  padding-right: 24px;
+}
+
+.select-container {
+  position: relative;
+}
+
+.select-container select {
+  appearance: none;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #5e5e5e;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 400px;
+  background-color: #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.add-step-button {
+  align-self: flex-start;
+}
+
+.add-image-button {
+  padding: 10px 20px;
+}
+
+.submit-button {
+  margin-top: 20px;
+  padding: 14px 24px;
+  font-size: 18px;
+}
+
+/* Updated search results positioning */
+.search-results {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+  top: 100%; /* Position below the input */
+  left: 0;
+  margin-top: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.no-results {
+  color: #5e5e5e;
+  font-style: italic;
+}
+
+.remove-button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: none;
+  border: none;
+  color: #5e5e5e;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.remove-button:hover {
+  color: #ff5722;
+}
+
