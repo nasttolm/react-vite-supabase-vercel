@@ -1,0 +1,303 @@
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 24px 0;
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+
+.form {
+  width: 100%;
+}
+
+.formLayout {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.formLeft {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.formRight {
+  width: 400px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ff5722;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #5e5e5e;
+  text-align: center;
+}
+
+.smallInput {
+  composes: input;
+  width: 120px;
+}
+
+.ingredientSearch {
+  flex: 1;
+  position: relative;
+}
+
+.searchRow {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.button {
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.button:hover {
+  background-color: #e64a19;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.searchButton {
+  composes: button;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ingredientsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ingredientPill {
+  background-color: #d9d9d9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  position: relative;
+  padding-right: 24px;
+}
+
+.dietaryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dietaryTag {
+  background-color: #d9d9d9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  position: relative;
+  padding-right: 24px;
+}
+
+.selectContainer {
+  position: relative;
+}
+
+.select {
+  appearance: none;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+}
+
+.selectArrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #5e5e5e;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 400px;
+  background-color: #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.recipeImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.addStepButton {
+  composes: button;
+  align-self: flex-start;
+}
+
+.addImageButton {
+  composes: button;
+  padding: 10px 20px;
+}
+
+.submitButton {
+  composes: button;
+  margin-top: 20px;
+  padding: 14px 24px;
+  font-size: 18px;
+}
+
+.searchResults {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Updated searchResultItem to support the new layout with source */
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.searchResultItem:hover {
+  background-color: #f5f5f5;
+}
+
+.noResults {
+  color: #5e5e5e;
+  font-style: italic;
+}
+
+.removeButton {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: none;
+  border: none;
+  color: #5e5e5e;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.removeButton:hover {
+  color: #ff5722;
+}
+
+/* Add styles for displaying ingredient sources */
+.resultContent {
+  flex: 1;
+}
+
+.resultSource {
+  font-size: 12px;
+  color: #ff5722;
+  background-color: #fff3f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* New style for calories note */
+.caloriesNote {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .formLayout {
+    flex-direction: column;
+  }
+
+  .formRight {
+    width: 100%;
+    order: -1;
+  }
+
+  .inputRow {
+    flex-direction: column;
+  }
+
+  .smallInput {
+    width: 100%;
+  }
+}

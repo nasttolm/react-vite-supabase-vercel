@@ -1,0 +1,151 @@
+/* Base styles */
+.body {
+  background-color: #ffffff;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #000000;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.html,
+.body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Common container styles */
+.recipeContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Logo styles */
+.logoContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logoImage {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+}
+
+/* Button styles */
+.orangeButton {
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.orangeButton:hover {
+  background-color: #e64a19;
+}
+
+.orangeButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Form elements */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ff5722;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Select styles */
+.selectContainer {
+  position: relative;
+}
+
+.selectContainer select {
+  appearance: none;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+}
+
+.selectArrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #5e5e5e;
+}
+
+/* Remove button */
+.removeButton {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: none;
+  border: none;
+  color: #5e5e5e;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.removeButton:hover {
+  color: #ff5722;
+}
+
+/* Loading and error containers */
+.loadingContainer,
+.errorContainer {
+  text-align: center;
+  padding: 40px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.errorContainer h2 {
+  color: #ff5722;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .recipeContent {
+    flex-direction: column;
+  }
+
+  .recipeMeta {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}

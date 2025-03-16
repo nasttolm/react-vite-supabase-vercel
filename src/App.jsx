@@ -28,6 +28,7 @@ function App() {
           <img src={vercelLogo} className="logo vercel" alt="React Supabase" />
         </a>
         <p className="read-the-docs">Click on logos to learn more.</p>
+        <p className="read-the-docs">First push.</p>
       </div>
       <Todos />
     </>
