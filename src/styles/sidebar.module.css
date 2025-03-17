@@ -1,0 +1,90 @@
+.sidebar {
+    position: fixed;
+    width: 256px;
+    height: 100%;
+    padding: 24px;
+    background-color: #FAF6F3;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+  
+  .logoContainer {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .logoIcon {
+    
+    width: 140px;
+  }
+  
+  .logoText {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .buttonContainer {
+    margin-top: 20px;
+    padding: 0 16px;
+    margin-bottom: 24px;
+  }
+  
+  .createButton {
+    width: 100%;
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .createButton:hover {
+    background-color: #e64a19;
+  }
+  
+  .filtersContainer {
+    padding: 0 16px;
+  }
+  
+  .filtersTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+  
+  .filtersList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .filterItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #d1d5db;
+    accent-color: #ff5722;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .filterLabel {
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  
