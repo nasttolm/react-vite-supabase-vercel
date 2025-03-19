@@ -1,132 +1,187 @@
 .container {
-    display: flex;
-    height: 100vh;
-    min-width: max-content;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
-      "Helvetica Neue", sans-serif;
-      background-color: #FAF6F3;
-  }
-  
-  .mainContent {
-    margin-left: 280px;
-    flex: 1;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  
-  .fixedHeader {
-    padding-top: 12px;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    background-color: white;
-    z-index: 10;
-    background-color: #FAF6F3;
-  }
-  
-  .searchContainer {
-    display: flex;
-    flex-direction: row;
-    flex: start;
-    padding: 20px 20px;
-    
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .searchWrapper {
-    position: relative;
-  }
-  
-  .searchInput {
-    width: 680px;
-    padding: 10px 15px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: #FAF6F3;
-  }
-  
-  .searchInput:focus {
-    outline: none;
-    border-color: #ff5722;
-    box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
-  }
-  
-  .searchIcon {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-  }
-  
-  .feedHeader {
-    
-    padding: 20px 20px 0;
-  }
-  
-  .feedTitle {
-    text-align: left;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0 0 20px 0;
-  }
-  
-  .categoryTabs {
-    margin-left: -24px; 
-    padding-left: 24px;
-    display: flex;
-    border-bottom: 1px solid #e5e7eb;
-    border-radius: none;
-  }
-  
-  .categoryTab {
+  display: flex;
+  height: 100vh;
+  min-width: max-content;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  background-color: #faf6f3;
+}
 
-    font-size: 16px;
-    font-weight: 500;
-    background: none;
-    border: none;
-    border-radius: 0;
-    cursor: pointer;
-    color: #6b7280;
-  }
-  
-  .categoryTab:hover {
-    color: #374151;
-    border-radius: 0;
-  }
+.mainContent {
+  margin-left: 280px;
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* Исправляем проблему с прокруткой */
+  overflow-y: auto;
+}
 
-  button:focus {
-    outline: none;
-  }
-  
-  .activeTab {
-    color: #ff5722;
-    border-radius: none;
-    border-bottom: 2px solid #ff5722;
-  }
-  
-  .recipeListContainer {
-    width: 1140px;
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 40px;
-    padding-left: 20px; 
-  }
-  
-  .recipeList {
+.fixedHeader {
+  padding-top: 12px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+  background-color: #faf6f3;
+}
 
-    margin-top: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+.searchContainer {
+  display: flex;
+  flex-direction: row;
+  flex: start;
+  padding: 20px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchInput {
+  width: 680px;
+  padding: 10px 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #faf6f3;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #ff5722;
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.feedHeader {
+  padding: 20px 20px 0;
+}
+
+.feedTitle {
+  text-align: left;
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 20px 0;
+}
+
+.categoryTabs {
+  margin-left: -24px;
+  padding-left: 24px;
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: none;
+  /* Добавляем возможность горизонтальной прокрутки для категорий */
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.categoryTabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.categoryTab {
+  padding: 12px 16px;
+  margin-right: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.categoryTab:hover {
+  color: #374151;
+  border-radius: 0;
+}
+
+button:focus {
+  outline: none;
+}
+
+.activeTab {
+  color: #ff5722;
+  border-radius: none;
+  border-bottom: 2px solid #ff5722;
+}
+
+/* Special styling for Favorites tab */
+.favoritesTab {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.favoritesTab:hover {
+  color: #ff5722;
+}
+
+.favoritesTab.activeTab {
+  color: #ff5722;
+}
+
+.favoriteIcon {
+  margin-right: 4px;
+}
+
+.recipeListContainer {
+  width: 1140px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 40px;
+  padding-left: 20px;
+}
+
+.recipeList {
+  margin-top: 200px; /* Увеличено со 150px до 200px */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Добавляем отступ снизу для лучшей прокрутки */
+  padding-bottom: 100px;
+}
+
+.loadingContainer {
+  margin-top: 200px; /* Увеличено со 150px до 200px */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.emptyState {
+  margin-top: 200px; /* Увеличено со 150px до 200px */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 18px;
+  color: #6b7280;
+  text-align: center;
+  padding: 0 20px;
+}
 
 button:hover {
   border-color: #ff5722;
 }
-  
-  
+
