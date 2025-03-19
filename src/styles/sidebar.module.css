@@ -1,90 +1,167 @@
 .sidebar {
-    position: fixed;
-    width: 256px;
-    height: 100%;
-    padding: 24px;
-    background-color: #FAF6F3;
-    border-right: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-  }
-  
-  .logoContainer {
-    padding: 16px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .logoIcon {
-    
-    width: 140px;
-  }
-  
-  .logoText {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  .buttonContainer {
-    margin-top: 20px;
-    padding: 0 16px;
-    margin-bottom: 24px;
-  }
-  
-  .createButton {
-    width: 100%;
-    background-color: #ff5722;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .createButton:hover {
-    background-color: #e64a19;
-  }
-  
-  .filtersContainer {
-    padding: 0 16px;
-  }
-  
-  .filtersTitle {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 8px;
-  }
-  
-  .filtersList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .filterItem {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .checkbox {
-    width: 16px;
-    height: 16px;
-    border: 1px solid #d1d5db;
-    accent-color: #ff5722;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: white;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  overflow-y: auto;
+  /* Исправляем проблему с прокруткой */
+  max-height: 100vh;
+}
 
-  .filterLabel {
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  
-  
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logoIcon {
+  height: 40px;
+}
+
+.buttonContainer {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.createButton {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.createButton:hover {
+  background-color: #e64a19;
+}
+
+.filtersContainer {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  /* Добавляем отступ снизу для лучшей прокрутки */
+  padding-bottom: 100px;
+}
+
+.filtersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filtersTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0;
+}
+
+.resetButton {
+  background: none;
+  border: none;
+  color: #ff5722;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.resetButton:hover {
+  text-decoration: underline;
+}
+
+.filterGroupTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  margin: 20px 0 12px;
+}
+
+.filtersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox,
+.radio {
+  width: 16px;
+  height: 16px;
+  accent-color: #ff5722;
+  cursor: pointer;
+}
+
+.filterLabel {
+  font-size: 14px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.servingsFilter {
+  margin-top: 8px;
+}
+
+.servingsInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.servingsInput:focus {
+  outline: none;
+  border-color: #ff5722;
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+}
+
+/* Custom favorite button styles */
+.favoriteButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.favoriteButton:hover {
+  border-color: #ff5722;
+  background-color: rgba(255, 87, 34, 0.05);
+}
+
+.favoriteActive {
+  background-color: rgba(255, 87, 34, 0.1);
+  border-color: #ff5722;
+  color: #ff5722;
+}
+
+.favoriteIcon {
+  margin-right: 4px;
+}
+
