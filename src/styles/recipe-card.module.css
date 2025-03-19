@@ -1,0 +1,40 @@
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    display: flex;
+  }
+  
+  .imageContainer {
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+  
+  .image {
+    border-radius: 6px;
+    object-fit: cover;
+  }
+  
+
+  
+  .title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+  }
+  
+  .author {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+  }
+  
+  .description {
+    font-size: 14px;
+    color: #374151;
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  
