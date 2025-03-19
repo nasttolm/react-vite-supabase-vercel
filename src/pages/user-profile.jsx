@@ -243,18 +243,18 @@ const Profile = () => {
             ) : (
               <>
                 <div className={styles.infoSection}>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label}>First Name</label>
-                    <p className={styles.value}>{profile.first_name}</p>
+                  <div className={styles.name}>
+                    {/* <label className={styles.label}>First Name</label> */}
+                    <p className={styles.firstName}>{profile.first_name} {profile.last_name}</p>
                   </div>
 
-                  <div className={styles.inputGroup}>
+                  {/* <div className={styles.inputGroup}>
                     <label className={styles.label}>Last Name</label>
                     <p className={styles.value}>{profile.last_name || "-"}</p>
-                  </div>
+                  </div> */}
 
                   <div className={styles.inputGroup}>
-                    <label className={styles.label}>Email</label>
+                    {/* <label className={styles.label}>Email</label> */}
                     <p className={styles.value}>{user.email}</p>
                   </div>
                 </div>
@@ -304,9 +304,14 @@ const Profile = () => {
               style={{ display: "none" }}
               disabled={!isEditing}
             />
-
+                <div className={isEditing ? styles.avatarEditOverlay : styles.avatarOverlay}
+                 onClick={() => isEditing && document.getElementById("avatar-upload").click()}
+                 style={{ cursor: isEditing ? "pointer" : "default" }}
+                >
+                  <img src="/edit2.svg" alt="Edit" className={styles.editIcon} />
+                </div>
             <div
-              className={styles.avatarWrapper}
+              className={isEditing ? styles.avatarWrapperEditing : styles.avatarWrapper}
               onClick={() => isEditing && document.getElementById("avatar-upload").click()}
               style={{ cursor: isEditing ? "pointer" : "default" }}
             >
@@ -315,6 +320,8 @@ const Profile = () => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{firstName.charAt(0).toUpperCase()}</div>
               )}
+
+        
             </div>
           </div>
         </div>
