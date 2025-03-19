@@ -15,6 +15,8 @@ import UpdatePassword from "./pages/auth/update-password"
 import CreateRecipe from "./pages/create-recipe"
 import RecipePage from "./pages/recipe-page"
 import Dashboard from "./pages/dashboard.jsx";
+import UserProfile from "./pages/user-profile";
+import CreateProfile from "./pages/create-profile"
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -42,9 +44,9 @@ createRoot(document.getElementById("root")).render(
               <Route path="/auth/update-password" element={<UpdatePassword />} />
               <Route path="/create-recipe" element={<CreateRecipe />} />
               <Route path="/recipes/:id" element={<RecipePage />} />
-
-              <Route index path="/dashboard" element={<Dashboard/>}>
-              </Route>
+              <Route index path="/dashboard" element={<Dashboard/>}/>
+              <Route path="/profile/:userId?" element={<UserProfile />} />
+              <Route path="/create-profile" element={<CreateProfile />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

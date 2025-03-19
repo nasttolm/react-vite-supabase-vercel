@@ -18,8 +18,9 @@ const SignUp = () => {
       if (result.data.user?.identities?.length === 0) {
         toast.error("Account cannot be created. Please, try again later.")
       } else {
-        toast.success("Welcome and please check your inbox to confirm your account!")
-        navigate("/")
+        toast.success("Welcome! Please check your inbox to confirm your account.")
+        // Redirect to create profile page after signup
+        navigate("/create-profile")
       }
     } catch (error) {
       console.error("Sign up error:", error)
