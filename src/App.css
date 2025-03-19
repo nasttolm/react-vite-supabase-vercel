@@ -2,9 +2,15 @@
   max-width: 100%;
   margin: 0px;
   box-sizing: border-box;
+  background-color: #FAF6F3;
 
 
 
+}
+
+body {
+  padding: 0px;
+  margin: 0px;
 }
 
 .logo {

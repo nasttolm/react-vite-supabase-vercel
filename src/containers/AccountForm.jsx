@@ -74,7 +74,7 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
 
       {showResetForm ? (
         <div className={styles.resetPasswordForm}>
-          <p className={styles.resetText}>Enter your email address and we'll send you a link to reset your password.</p>
+          <p className={styles.resetText}>Enter your email address and we`ll send you a link to reset your password.</p>
           <TextField
             fullWidth
             id="reset-email"
@@ -196,7 +196,7 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
               </>
             ) : (
               <>
-                Don't have an account yet?{" "}
+                Don`t have an account yet?{" "}
                 <span
                   className={styles.signupLink}
                   onClick={() => navigate("/auth/sign-up")}
