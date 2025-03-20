@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
-import styles from "../styles/supabase-planner.module.css"
+import styles from "../styles/planner.module.css"
 import sidebarStyles from "../styles/sidebar.module.css"
 import supabase from "../utils/supabase"
-import { fetchAllRecipes, fetchAllDiets, fetchAllCategories } from "../utils/supabase-dashboard"
+import { fetchAllRecipes, fetchAllDiets, fetchAllCategories, isRecipeFavorited } from "../utils/supabase-dashboard"
 import { generateMealPlan, generateShoppingList } from "../utils/supabase-planner"
+import { getRecipeById } from "../utils/supabase-recipe-page"
+import { fetchSavedMealPlans, deleteMealPlan } from "../utils/supabase-meal-plans"
 
-// Replace the meal types constants
+// Days of week constants
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 export default function SupabasePlanner() {
@@ -21,6 +23,17 @@ export default function SupabasePlanner() {
   const [mealPlan, setMealPlan] = useState(null)
   const [shoppingList, setShoppingList] = useState(null)
   const [showShoppingList, setShowShoppingList] = useState(false)
+  const [favoriteRecipes, setFavoriteRecipes] = useState({}) // Add state to store favorite recipes
+
+  // Add state for plan name
+  const [planName, setPlanName] = useState("My Meal Plan")
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // Saved plans states
+  const [showSavedPlans, setShowSavedPlans] = useState(false)
+  const [savedPlans, setSavedPlans] = useState([])
+  const [loadingSavedPlans, setLoadingSavedPlans] = useState(false)
 
   // Filters for generation
   const [diets, setDiets] = useState([])
@@ -73,6 +86,31 @@ export default function SupabasePlanner() {
 
     fetchData()
   }, [])
+
+  // Check if a recipe is in favorites
+  const checkIfFavorite = async (recipeId) => {
+    if (!user) return false
+
+    // If we already have information about this recipe in state, use it
+    if (favoriteRecipes[recipeId] !== undefined) {
+      return favoriteRecipes[recipeId]
+    }
+
+    try {
+      const isFavorite = await isRecipeFavorited(user.id, recipeId)
+
+      // Update state
+      setFavoriteRecipes((prev) => ({
+        ...prev,
+        [recipeId]: isFavorite,
+      }))
+
+      return isFavorite
+    } catch (error) {
+      console.error("Error checking if recipe is favorited:", error)
+      return false
+    }
+  }
 
   // Filter change handlers
   const handleDietToggle = (dietId) => {
@@ -145,7 +183,18 @@ export default function SupabasePlanner() {
     }
   }
 
-  // Generate meal plan
+  // Add this function to fetch complete recipe data with ingredients
+  const fetchRecipeWithIngredients = async (recipeId) => {
+    try {
+      const recipeData = await getRecipeById(recipeId)
+      return recipeData
+    } catch (error) {
+      console.error("Error fetching recipe with ingredients:", error)
+      return null
+    }
+  }
+
+  // Update the handleGeneratePlan function to fetch complete recipe data
   const handleGeneratePlan = async () => {
     if (!user) {
       toast.error("Please sign in to create a meal plan")
@@ -158,9 +207,6 @@ export default function SupabasePlanner() {
     try {
       // Filter recipes by selected criteria
       let filteredRecipes = [...recipes]
-
-      // Debug: Check if recipes have ingredient data
-      console.log("Sample recipe:", filteredRecipes[0])
 
       // Apply diet filter
       if (selectedDietIds.length > 0) {
@@ -221,25 +267,37 @@ export default function SupabasePlanner() {
         servingsCount,
       })
 
-      setMealPlan(plan)
+      // Fetch complete recipe data with ingredients for each recipe in the plan
+      const planWithIngredients = [...plan]
 
-      // Generate shopping list based on the plan
-      const list = generateShoppingList(plan)
+      // For each day in the plan
+      for (let dayIndex = 0; dayIndex < planWithIngredients.length; dayIndex++) {
+        const day = planWithIngredients[dayIndex]
 
-      // Debug: Check if the shopping list is empty
-      console.log("Generated shopping list:", list)
-      console.log("Shopping list keys:", Object.keys(list))
-      console.log(
-        "Shopping list categories:",
-        Object.keys(list).map((category) => {
-          return {
-            category,
-            itemCount: list[category].length,
-            items: list[category].slice(0, 3), // Show first 3 items for debugging
+        // For each category in the day
+        for (const [categoryId, meals] of Object.entries(day)) {
+          // For each meal in the category
+          for (let mealIndex = 0; mealIndex < meals.length; mealIndex++) {
+            if (meals[mealIndex]) {
+              // Fetch complete recipe data with ingredients
+              const completeRecipe = await fetchRecipeWithIngredients(meals[mealIndex].id)
+              if (completeRecipe) {
+                // Replace the recipe with the complete data
+                planWithIngredients[dayIndex][categoryId][mealIndex] = {
+                  ...completeRecipe,
+                  servings: meals[mealIndex].servings,
+                  default_servings: meals[mealIndex].default_servings,
+                }
+              }
+            }
           }
-        }),
-      )
+        }
+      }
 
+      setMealPlan(planWithIngredients)
+
+      // Generate shopping list based on the plan with complete recipe data
+      const list = generateShoppingList(planWithIngredients)
       setShoppingList(list)
 
       toast.success("Meal plan successfully created!")
@@ -251,22 +309,128 @@ export default function SupabasePlanner() {
     }
   }
 
+  // Show save dialog
+  const openSaveDialog = () => {
+    if (!user || !mealPlan) {
+      toast.error("Please generate a meal plan first")
+      return
+    }
+
+    setPlanName("My Meal Plan")
+    setShowSaveDialog(true)
+  }
+
   // Save meal plan
   const handleSavePlan = async () => {
-    if (!user || !mealPlan) return
+    if (!user || !mealPlan) {
+      toast.error("Please generate a meal plan first")
+      return
+    }
+
+    setSaving(true)
 
     try {
       const { error } = await supabase.from("meal_plans").insert({
         user_id: user.id,
         plan_data: mealPlan,
+        shopping_list: shoppingList,
         created_at: new Date().toISOString(),
       })
 
       if (error) throw error
+
+      setShowSaveDialog(false)
       toast.success("Meal plan saved!")
     } catch (error) {
       console.error("Error saving meal plan:", error)
       toast.error("Failed to save meal plan")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Load saved plans
+  const loadSavedPlans = async () => {
+    if (!user) {
+      toast.error("Please sign in to view saved plans")
+      return
+    }
+
+    setLoadingSavedPlans(true)
+    try {
+      const plans = await fetchSavedMealPlans(user.id)
+      setSavedPlans(plans)
+      setShowSavedPlans(true)
+    } catch (error) {
+      console.error("Error loading saved plans:", error)
+      toast.error("Failed to load saved plans")
+    } finally {
+      setLoadingSavedPlans(false)
+    }
+  }
+
+  // Load a specific saved plan
+  const loadSavedPlan = async (plan) => {
+    try {
+      setLoading(true)
+      setShowSavedPlans(false)
+
+      // Set the plan data
+      setMealPlan(plan.plan_data)
+      setShoppingList(plan.shopping_list)
+      setPlanName(plan.name)
+
+      // Reset the shopping list view to show the plan first
+      setShowShoppingList(false)
+
+      // Update plan settings based on the loaded plan
+      if (plan.plan_data && plan.plan_data.length > 0) {
+        // Set days to generate
+        setPlanSettings((prev) => ({
+          ...prev,
+          daysToGenerate: plan.plan_data.length,
+        }))
+
+        // Set selected categories
+        const selectedCategories = {}
+        const firstDay = plan.plan_data[0]
+
+        if (firstDay) {
+          Object.entries(firstDay).forEach(([categoryId, meals]) => {
+            selectedCategories[categoryId] = meals.length
+          })
+
+          setPlanSettings((prev) => ({
+            ...prev,
+            selectedCategories,
+          }))
+        }
+      }
+
+      toast.success("Plan loaded successfully!")
+    } catch (error) {
+      console.error("Error loading saved plan:", error)
+      toast.error("Failed to load saved plan")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Delete a saved plan
+  const handleDeletePlan = async (planId) => {
+    if (!confirm("Are you sure you want to delete this plan?")) {
+      return
+    }
+
+    try {
+      await deleteMealPlan(planId)
+      setSavedPlans(savedPlans.filter((plan) => plan.id !== planId))
+      toast.success("Plan deleted successfully!")
+    } catch (error) {
+      console.error("Error deleting plan:", error)
+      toast.error("Failed to delete plan")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -304,6 +468,11 @@ export default function SupabasePlanner() {
       <div className={sidebarStyles.sidebar}>
         <div className={sidebarStyles.buttonContainer}>
           <h2 className={sidebarStyles.plannerTitle}>Meal Planner</h2>
+          <div className={styles.savedPlansButtonContainer} style={{ marginTop: "12px" }}>
+            <button className={styles.savedPlansButton} onClick={loadSavedPlans} disabled={!user}>
+              View Saved Plans
+            </button>
+          </div>
         </div>
 
         <div className={sidebarStyles.filtersContainer}>
@@ -502,7 +671,7 @@ export default function SupabasePlanner() {
                 <button className={styles.actionButton} onClick={toggleShoppingList}>
                   {showShoppingList ? "Show Plan" : "Shopping List"}
                 </button>
-                <button className={styles.actionButton} onClick={handleSavePlan}>
+                <button className={styles.actionButton} onClick={openSaveDialog}>
                   Save Plan
                 </button>
               </div>
@@ -513,6 +682,7 @@ export default function SupabasePlanner() {
                 <h3 className={styles.shoppingListTitle}>Shopping List</h3>
                 {shoppingList && shoppingList.Ingredients && (
                   <div className={styles.shoppingCategory}>
+                    <h4 className={styles.categoryTitle}>Ingredients</h4>
                     <ul className={styles.ingredientsList}>
                       {shoppingList.Ingredients.map((item, index) => (
                         <li key={index} className={styles.ingredientItem}>
@@ -550,9 +720,28 @@ export default function SupabasePlanner() {
                                           alt={meal.title}
                                           className={styles.recipeImage}
                                         />
+                                        {/* Debug information */}
+                                        {console.log("Meal favorited status:", meal.id, meal.isFavorited)}
                                       </div>
                                       <div className={styles.recipeInfo}>
-                                        <h5 className={styles.recipeTitle}>{meal.title}</h5>
+                                        <h5 className={styles.recipeTitle}>
+                                          {meal.title}
+                                          {meal.isFavorited && (
+                                            <svg
+                                              width="16"
+                                              height="16"
+                                              viewBox="0 0 24 24"
+                                              fill="#ff5722"
+                                              stroke="#ff5722"
+                                              strokeWidth="2"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              className={styles.titleFavoriteIcon}
+                                            >
+                                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                            </svg>
+                                          )}
+                                        </h5>
                                         <p className={styles.recipeTime}>{meal.cooking_time || "30"} min</p>
                                       </div>
                                     </div>
@@ -584,6 +773,95 @@ export default function SupabasePlanner() {
           </div>
         )}
       </div>
+
+      {/* Simple Save Dialog */}
+      {showSaveDialog && (
+        <div className={styles.saveDialog}>
+          <div className={styles.saveDialogContent}>
+            <h3 className={styles.saveDialogTitle}>Save Meal Plan</h3>
+            <div className={styles.saveDialogForm}>
+              <label htmlFor="planName" className={styles.saveDialogLabel}>
+                Plan Name:
+              </label>
+              <input
+                type="text"
+                id="planName"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                className={styles.saveDialogInput}
+              />
+            </div>
+            <div className={styles.saveDialogActions}>
+              <button className={styles.saveDialogCancel} onClick={() => setShowSaveDialog(false)}>
+                Cancel
+              </button>
+              <button className={styles.saveDialogSave} onClick={handleSavePlan} disabled={saving}>
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Plans Modal */}
+      {showSavedPlans && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3 className={styles.modalTitle}>Saved Meal Plans</h3>
+
+            {loadingSavedPlans ? (
+              <div className={styles.loadingContainer}>
+                <p>Loading saved plans...</p>
+              </div>
+            ) : savedPlans.length === 0 ? (
+              <div className={styles.noSavedPlans}>
+                <p>You don't have any saved meal plans yet.</p>
+              </div>
+            ) : (
+              <div className={styles.savedPlansList}>
+                {savedPlans.map((plan) => (
+                  <div key={plan.id} className={styles.savedPlanItem} onClick={() => loadSavedPlan(plan)}>
+                    <div className={styles.savedPlanInfo}>
+                      <h4 className={styles.savedPlanName}>{plan.name}</h4>
+                      <div className={styles.savedPlanMeta}>
+                        <span className={styles.savedPlanDate}>{new Date(plan.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className={styles.savedPlanActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={styles.savedPlanActionButton}
+                        onClick={() => handleDeletePlan(plan.id)}
+                        title="Delete Plan"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <line x1="10" y1="11" x2="10" y2="17" />
+                          <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.modalActions}>
+              <button className={styles.closeButton} onClick={() => setShowSavedPlans(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

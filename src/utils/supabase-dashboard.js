@@ -1,9 +1,8 @@
+// utils/supabase-dashboard.js
+
 import supabase from "./supabase"
 
-/**
- * Fetch all recipes from the database with their diets
- * @returns {Promise<Array>} Array of recipes with diet information
- */
+
 export const fetchAllRecipes = async () => {
   try {
     // First, get all recipes
@@ -20,10 +19,11 @@ export const fetchAllRecipes = async () => {
       return []
     }
 
-    // For each recipe, get its diets
-    const recipesWithDiets = await Promise.all(
+    // For each recipe, get its diets and author information
+    const recipesWithDetails = await Promise.all(
       recipes.map(async (recipe) => {
         try {
+          // Get diets for the recipe
           const { data: dietData, error: dietError } = await supabase
             .from("recipe_diets")
             .select(`
@@ -33,31 +33,48 @@ export const fetchAllRecipes = async () => {
 
           if (dietError) {
             console.error("Error fetching diets for recipe:", recipe.id, dietError)
-            return { ...recipe, diets: [] }
+            return { ...recipe, diets: [], authorNickname: "Unknown" }
           }
 
           // Transform the diet data to a more convenient format
           const diets = dietData.map((item) => item.diets) || []
 
+          // Get author information if user_id exists
+          let authorNickname = "Unknown"
+          if (recipe.user_id) {
+            const { data: userProfile, error: userError } = await supabase
+              .from("user_profiles")
+              .select("nickname, first_name")
+              .eq("id", recipe.user_id)
+              .single()
+
+            if (!userError && userProfile) {
+              authorNickname = userProfile.nickname || userProfile.first_name || "Unknown"
+            } else {
+              console.error("Error fetching user profile:", userError)
+            }
+          }
+
           return {
             ...recipe,
             diets,
+            authorNickname,
           }
         } catch (error) {
-          console.error("Error processing diets for recipe:", recipe.id, error)
-          return { ...recipe, diets: [] }
+          console.error("Error processing details for recipe:", recipe.id, error)
+          return { ...recipe, diets: [], authorNickname: "Unknown" }
         }
       }),
     )
 
-    return recipesWithDiets
+    return recipesWithDetails
   } catch (error) {
     console.error("Error fetching recipes:", error)
     return []
   }
 }
 
-// Обновим функцию fetchRecipesByDiets для работы с логикой ИЛИ
+
 export const fetchRecipesByDiets = async (dietIds) => {
   try {
     if (!dietIds || dietIds.length === 0) {
@@ -272,8 +289,8 @@ export const fetchFavoriteRecipes = async (userId) => {
       throw error
     }
 
-    // For each recipe, get its diets
-    const recipesWithDiets = await Promise.all(
+    // For each recipe, get its diets and author information
+    const recipesWithDetails = await Promise.all(
       data.map(async (recipe) => {
         try {
           const { data: dietData, error: dietError } = await supabase
@@ -285,24 +302,41 @@ export const fetchFavoriteRecipes = async (userId) => {
 
           if (dietError) {
             console.error("Error fetching diets for recipe:", recipe.id, dietError)
-            return { ...recipe, diets: [] }
+            return { ...recipe, diets: [], authorNickname: "Unknown" }
           }
 
           // Transform the diet data to a more convenient format
           const diets = dietData.map((item) => item.diets) || []
 
+          // Get author information if user_id exists
+          let authorNickname = "Unknown"
+          if (recipe.user_id) {
+            const { data: userProfile, error: userError } = await supabase
+              .from("user_profiles")
+              .select("nickname, first_name")
+              .eq("id", recipe.user_id)
+              .single()
+
+            if (!userError && userProfile) {
+              authorNickname = userProfile.nickname || userProfile.first_name || "Unknown"
+            } else {
+              console.error("Error fetching user profile:", userError)
+            }
+          }
+
           return {
             ...recipe,
             diets,
+            authorNickname,
           }
         } catch (error) {
-          console.error("Error processing diets for recipe:", recipe.id, error)
-          return { ...recipe, diets: [] }
+          console.error("Error processing details for recipe:", recipe.id, error)
+          return { ...recipe, diets: [], authorNickname: "Unknown" }
         }
       }),
     )
 
-    return recipesWithDiets || []
+    return recipesWithDetails || []
   } catch (error) {
     console.error("Error in fetchFavoriteRecipes:", error)
     return []
@@ -451,8 +485,8 @@ export const fetchRecipesByCategory = async (categoryId) => {
       return []
     }
 
-    // Для каждого рецепта получаем его диеты
-    const recipesWithDiets = await Promise.all(
+   
+    const recipesWithDetails = await Promise.all(
       recipes.map(async (recipe) => {
         try {
           const { data: dietData, error: dietError } = await supabase
@@ -464,24 +498,41 @@ export const fetchRecipesByCategory = async (categoryId) => {
 
           if (dietError) {
             console.error("Error fetching diets for recipe:", recipe.id, dietError)
-            return { ...recipe, diets: [] }
+            return { ...recipe, diets: [], authorNickname: "Unknown" }
           }
 
-          // Преобразуем данные о диетах в более удобный формат
+          // Transform the diet data to a more convenient format
           const diets = dietData.map((item) => item.diets) || []
+
+          // Get author information if user_id exists
+          let authorNickname = "Unknown"
+          if (recipe.user_id) {
+            const { data: userProfile, error: userError } = await supabase
+              .from("user_profiles")
+              .select("nickname, first_name")
+              .eq("id", recipe.user_id)
+              .single()
+
+            if (!userError && userProfile) {
+              authorNickname = userProfile.nickname || userProfile.first_name || "Unknown"
+            } else {
+              console.error("Error fetching user profile:", userError)
+            }
+          }
 
           return {
             ...recipe,
             diets,
+            authorNickname,
           }
         } catch (error) {
-          console.error("Error processing diets for recipe:", recipe.id, error)
-          return { ...recipe, diets: [] }
+          console.error("Error processing details for recipe:", recipe.id, error)
+          return { ...recipe, diets: [], authorNickname: "Unknown" }
         }
       }),
     )
 
-    return recipesWithDiets
+    return recipesWithDetails
   } catch (error) {
     console.error("Error fetching recipes by category:", error)
     return []
@@ -731,7 +782,7 @@ export const getUserProfile = async (userId) => {
   }
 }
 
-// Добавим функцию для получения всех категорий
+
 export const fetchAllCategories = async () => {
   try {
     const { data, error } = await supabase.from("category").select("*").order("name")
@@ -747,7 +798,124 @@ export const fetchAllCategories = async () => {
   }
 }
 
-// Обновим экспорт по умолчанию, чтобы включить новые функции
+/**
+ * Search users by nickname
+ * @param {string} query - Search query
+ * @returns {Promise<Array>} Array of matching users
+ */
+export const searchUsersByNickname = async (query) => {
+  try {
+    if (!query || query.trim().length < 2) return []
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id, first_name, last_name, nickname, avatar_url")
+      .ilike("nickname", `%${query}%`)
+      .limit(5)
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    console.error("Error searching users by nickname:", error)
+    return []
+  }
+}
+
+
+export const fetchRecipesByAuthorNickname = async (nickname) => {
+  try {
+    if (!nickname || nickname.trim() === "") {
+      return []
+    }
+
+
+    const { data: userProfiles, error: userError } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .ilike("nickname", `%${nickname}%`)
+
+    if (userError) {
+      throw userError
+    }
+
+    if (!userProfiles || userProfiles.length === 0) {
+      return []
+    }
+
+
+    const userIds = userProfiles.map((profile) => profile.id)
+
+
+    const { data: recipes, error: recipesError } = await supabase
+      .from("recipes")
+      .select("*")
+      .in("user_id", userIds)
+      .order("created_at", { ascending: false })
+
+    if (recipesError) {
+      throw recipesError
+    }
+
+    if (!recipes || recipes.length === 0) {
+      return []
+    }
+
+ 
+    const recipesWithDetails = await Promise.all(
+      recipes.map(async (recipe) => {
+        try {
+
+          const { data: dietData, error: dietError } = await supabase
+            .from("recipe_diets")
+            .select(`
+              diets(id, name)
+            `)
+            .eq("recipe_id", recipe.id)
+
+          if (dietError) {
+            console.error("Error fetching diets for recipe:", recipe.id, dietError)
+            return { ...recipe, diets: [], authorNickname: "Unknown" }
+          }
+
+
+          const diets = dietData.map((item) => item.diets) || []
+
+
+          let authorNickname = "Unknown"
+          if (recipe.user_id) {
+            const { data: userProfile, error: userError } = await supabase
+              .from("user_profiles")
+              .select("nickname, first_name")
+              .eq("id", recipe.user_id)
+              .single()
+
+            if (!userError && userProfile) {
+              authorNickname = userProfile.nickname || userProfile.first_name || "Unknown"
+            } else {
+              console.error("Error fetching user profile:", userError)
+            }
+          }
+
+          return {
+            ...recipe,
+            diets,
+            authorNickname,
+          }
+        } catch (error) {
+          console.error("Error processing details for recipe:", recipe.id, error)
+          return { ...recipe, diets: [], authorNickname: "Unknown" }
+        }
+      }),
+    )
+
+    return recipesWithDetails
+  } catch (error) {
+    console.error("Error fetching recipes by author nickname:", error)
+    return []
+  }
+}
+
+
 export default {
   fetchAllRecipes,
   fetchRecipeById,
@@ -770,5 +938,7 @@ export default {
   getUserProfile,
   fetchAllDiets,
   fetchAllCategories,
+  searchUsersByNickname,
+  fetchRecipesByAuthorNickname,
 }
 

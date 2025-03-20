@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -170,6 +172,7 @@ const RecipePage = () => {
           <span>Cooking Time: {recipe.cooking_time} minutes</span>
           <span>Serving: {recipe.servings} people</span>
           <span>Category: {categoryName}</span>
+          <span>Author: @{recipe.authorNickname}</span>
         </div>
 
         {dietaryTags.length > 0 && (

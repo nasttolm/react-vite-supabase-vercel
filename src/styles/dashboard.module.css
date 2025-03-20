@@ -15,7 +15,6 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  /* Исправляем проблему с прокруткой */
   overflow-y: auto;
 }
 
@@ -81,7 +80,6 @@
   display: flex;
   border-bottom: 1px solid #e5e7eb;
   border-radius: none;
-  /* Добавляем возможность горизонтальной прокрутки для категорий */
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
@@ -151,16 +149,15 @@ button:focus {
 }
 
 .recipeList {
-  margin-top: 200px; /* Увеличено со 150px до 200px */
+  margin-top: 200px; 
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* Добавляем отступ снизу для лучшей прокрутки */
   padding-bottom: 100px;
 }
 
 .loadingContainer {
-  margin-top: 200px; /* Увеличено со 150px до 200px */
+  margin-top: 200px; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -170,7 +167,7 @@ button:focus {
 }
 
 .emptyState {
-  margin-top: 200px; /* Увеличено со 150px до 200px */
+  margin-top: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -184,4 +181,3 @@ button:focus {
 button:hover {
   border-color: #ff5722;
 }
-

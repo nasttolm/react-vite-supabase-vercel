@@ -80,7 +80,7 @@ const Profile = () => {
     checkAuth()
   }, [navigate])
 
-  // Добавьте эту функцию после useEffect, но перед validateNickname
+  
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]

@@ -228,7 +228,7 @@ const CreateProfile = () => {
                     </FormControl>
                   </div>
 
-                  {/* Изменение: заменен выпадающий список на поле ввода времени */}
+                  
                   <div className={styles.selectWrapper}>
                     <TextField
                       fullWidth

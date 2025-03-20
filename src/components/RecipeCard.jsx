@@ -39,14 +39,11 @@ const RecipeCard = ({ recipe }) => {
   }
 
   const handleCardClick = () => {
-    // Изменяем путь с "/recipe/" на "/recipes/"
     navigate(`/recipes/${recipe.id}`)
   }
 
   // Format author name
-  const authorName = recipe.user_profiles
-    ? `@${recipe.user_profiles.first_name?.toLowerCase()}`
-    : recipe.author || "Unknown"
+  const authorName = recipe.authorNickname || "Unknown"
 
   return (
     <div className={styles.card} onClick={handleCardClick}>
@@ -81,7 +78,7 @@ const RecipeCard = ({ recipe }) => {
             </svg>
           </button>
         </div>
-        <p className={styles.author}>{authorName}</p>
+        <p className={styles.author}>@{authorName}</p>
 
         {/* Display diets if available */}
         {recipe.diets && recipe.diets.length > 0 && (
