@@ -17,6 +17,7 @@ import RecipePage from "./pages/recipe-page"
 import Dashboard from "./pages/dashboard.jsx";
 import UserProfile from "./pages/user-profile";
 import CreateProfile from "./pages/create-profile"
+import SupabasePlanner from "./pages/planner.jsx"
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -47,6 +48,7 @@ createRoot(document.getElementById("root")).render(
               <Route index path="/dashboard" element={<Dashboard/>}/>
               <Route path="/profile/:userId?" element={<UserProfile />} />
               <Route path="/create-profile" element={<CreateProfile />} />
+              <Route path="/planner" element={<SupabasePlanner />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

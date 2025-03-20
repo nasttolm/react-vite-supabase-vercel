@@ -10,7 +10,6 @@
   flex-direction: column;
   padding: 24px 0;
   overflow-y: auto;
-  /* Исправляем проблему с прокруткой */
   max-height: 100vh;
 }
 
@@ -52,7 +51,6 @@
   padding: 24px;
   flex: 1;
   overflow-y: auto;
-  /* Добавляем отступ снизу для лучшей прокрутки */
   padding-bottom: 100px;
 }
 
@@ -132,6 +130,33 @@
   outline: none;
   border-color: #ff5722;
   box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+}
+
+.authorSearchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.clearAuthorButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clearAuthorButton:hover {
+  color: #ff5722;
 }
 
 /* Custom favorite button styles */
