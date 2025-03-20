@@ -184,10 +184,17 @@ export default function SupabasePlanner() {
   }
 
   // Add this function to fetch complete recipe data with ingredients
-  const fetchRecipeWithIngredients = async (recipeId) => {
+  const fetchRecipeWithIngredients = async (recipeId, servings, defaultServings) => {
     try {
       const recipeData = await getRecipeById(recipeId)
-      return recipeData
+      if (recipeData) {
+        return {
+          ...recipeData,
+          servings: servings,
+          default_servings: defaultServings || recipeData.servings || 2,
+        }
+      }
+      return null
     } catch (error) {
       console.error("Error fetching recipe with ingredients:", error)
       return null
@@ -280,7 +287,11 @@ export default function SupabasePlanner() {
           for (let mealIndex = 0; mealIndex < meals.length; mealIndex++) {
             if (meals[mealIndex]) {
               // Fetch complete recipe data with ingredients
-              const completeRecipe = await fetchRecipeWithIngredients(meals[mealIndex].id)
+              const completeRecipe = await fetchRecipeWithIngredients(
+                meals[mealIndex].id,
+                meals[mealIndex].servings,
+                meals[mealIndex].default_servings,
+              )
               if (completeRecipe) {
                 // Replace the recipe with the complete data
                 planWithIngredients[dayIndex][categoryId][mealIndex] = {
@@ -439,9 +450,10 @@ export default function SupabasePlanner() {
     setShowShoppingList(!showShoppingList)
   }
 
-  // Navigate to recipe
-  const navigateToRecipe = (recipeId) => {
-    navigate(`/recipes/${recipeId}`)
+  // Navigate to recipe with servings information
+  const navigateToRecipe = (recipeId, servings) => {
+    // Pass servings count as a query parameter
+    navigate(`/recipes/${recipeId}?servings=${servings}`)
   }
 
   // Loading state
@@ -713,7 +725,10 @@ export default function SupabasePlanner() {
                                     {category ? category.name : "Meal"} {meals.length > 1 ? mealIndex + 1 : ""}
                                   </h4>
                                   {meal ? (
-                                    <div className={styles.recipeCard} onClick={() => navigateToRecipe(meal.id)}>
+                                    <div
+                                      className={styles.recipeCard}
+                                      onClick={() => navigateToRecipe(meal.id, meal.servings)}
+                                    >
                                       <div className={styles.recipeImageContainer}>
                                         <img
                                           src={meal.image_url || "/placeholder.svg"}

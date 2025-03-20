@@ -1,3 +1,239 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  min-width: max-content;
+  overflow: visible; /* Changed from hidden to visible */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
+  background-color: #faf6f3;
+}
+
+.mainContent {
+  margin-left: 280px;
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 100px; /* Add bottom padding for better visibility */
+}
+
+.header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.generateButtonContainer {
+  margin-top: 32px;
+}
+
+.generateButton {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.generateButton:hover {
+  background-color: #e64a19;
+}
+
+.generateButton:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+}
+
+.emptyStateContent {
+  text-align: center;
+  max-width: 500px;
+}
+
+.emptyStateTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.emptyStateDescription {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+}
+
+.emptyStateImage {
+  margin-top: 24px;
+}
+
+.dietTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dietTag {
+  padding: 6px 12px;
+  background-color: #f3f4f6;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dietTag:hover {
+  background-color: #e5e7eb;
+}
+
+.dietTag.selected {
+  background-color: #ff5722;
+  color: white;
+}
+
+/* Add these styles to your existing CSS file */
+
+.excludeIngredientsContainer {
+  margin-top: 8px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #ff5722;
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+}
+
+.ingredientSearch {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.searchResults {
+  position: absolute;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.searchResultItem:hover {
+  background-color: #f9f9f9;
+}
+
+.resultContent {
+  flex: 1;
+}
+
+.resultSource {
+  font-size: 12px;
+  color: #ff5722;
+  background-color: #fff3f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.noResults {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.excludedIngredientsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.excludedIngredient {
+  background-color: #f3f4f6;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.removeIngredientButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeIngredientButton:hover {
+  color: #ff5722;
+}
+
+/* Planner styles */
 .planContainer {
   background-color: white;
   border-radius: 12px;
@@ -44,6 +280,7 @@
 
 .weekPlan {
   padding: 24px;
+  overflow-y: visible;
 }
 
 .dayPlan {
@@ -96,6 +333,7 @@
 }
 
 .recipeImageContainer {
+  position: relative;
   width: 100px;
   height: 100px;
   flex-shrink: 0;
@@ -112,6 +350,7 @@
   padding: 12px 16px;
 }
 
+/* Update the comment for recipe title style */
 .recipeTitle {
   font-size: 14px;
   font-weight: 500;
@@ -187,6 +426,229 @@
   color: #6b7280;
 }
 
+.categoryCountContainer {
+  display: flex;
+  align-items: center;
+  margin-left: 28px;
+  margin-top: 8px;
+}
+
+.categoryCountLabel {
+  font-size: 14px;
+  color: #6b7280;
+  margin-right: 8px;
+}
+
+.categoryCountInput {
+  width: 50px;
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.plannerTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* Add these styles to the end of the file */
+
+.favoriteIndicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.favoriteIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Add these styles to the end of your existing CSS file */
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.formInput,
+.formTextarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: #ff5722;
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: #ff5722;
+}
+
+.checkboxLabel {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelButton,
+.closeButton {
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover,
+.closeButton:hover {
+  background-color: #e5e7eb;
+}
+
+.saveButton {
+  padding: 8px 16px;
+  background-color: #ff5722;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background-color: #e64a19;
+}
+
+.saveButton:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Saved Plans */
+.savedPlansButtonContainer {
+  margin-bottom: 20px;
+}
+
+.savedPlansButton {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.savedPlansButton:hover {
+  background-color: #e5e7eb;
+}
+
+.noSavedPlans {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px 0;
+}
+
+.savedPlansList {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Update the comment for saved plan item style */
 .savedPlanItem {
   display: flex;
   justify-content: space-between;
@@ -202,5 +664,264 @@
   border-color: #ff5722;
   background-color: rgba(255, 87, 34, 0.05);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.savedPlanInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.savedPlanName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.favoriteIcon {
+  display: inline-flex;
+}
+
+.savedPlanDescription {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.savedPlanMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.savedPlanDate {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.savedPlanTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.savedPlanTag {
+  font-size: 12px;
+  color: #ff5722;
+  background-color: rgba(255, 87, 34, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.savedPlanActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.savedPlanActionButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.savedPlanActionButton:hover {
+  background-color: #f3f4f6;
+  color: #ff5722;
+}
+
+/* Add these styles to the end of your existing CSS file */
+
+/* Simple Save Dialog */
+.saveDialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.saveDialogContent {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.saveDialogTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.saveDialogForm {
+  margin-bottom: 20px;
+}
+
+.saveDialogLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.saveDialogInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.saveDialogInput:focus {
+  outline: none;
+  border-color: #ff5722;
+  box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.1);
+}
+
+.saveDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.saveDialogCancel {
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveDialogCancel:hover {
+  background-color: #e5e7eb;
+}
+
+.saveDialogSave {
+  padding: 8px 16px;
+  background-color: #ff5722;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveDialogSave:hover {
+  background-color: #e64a19;
+}
+
+.saveDialogSave:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.titleFavoriteIcon {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+
+.recipeTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+.savedPlanItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.savedPlanItem:hover {
+  border-color: #ff5722;
+  background-color: rgba(255, 87, 34, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Update the comment for author search */
+.authorSearchContainer {
+  position: relative;
+  width: 100%;
+}
+
+/* Update the comment for clear author button */
+.clearAuthorButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Update the comment for favorite button styles */
+.favoriteButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
 }
 

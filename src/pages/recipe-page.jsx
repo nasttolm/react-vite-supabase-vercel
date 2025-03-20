@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router"
+import { useParams, useNavigate, useSearchParams } from "react-router"
 import toast from "react-hot-toast"
 import styles from "../styles/recipe-page.module.css"
 import globalStyles from "../styles/styles.module.css"
@@ -10,6 +8,8 @@ import supabase from "../utils/supabase"
 
 const RecipePage = () => {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const servingsFromUrl = searchParams.get("servings")
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -19,6 +19,7 @@ const RecipePage = () => {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [currentServings, setCurrentServings] = useState(0)
 
   useEffect(() => {
     async function loadRecipe() {
@@ -28,6 +29,8 @@ const RecipePage = () => {
         console.log("Loaded recipe:", recipeData)
         setRecipe(recipeData)
         setIsFavorited(recipeData.isFavorited)
+        // Set initial servings to the recipe's default servings
+        setCurrentServings(servingsFromUrl ? Number.parseInt(servingsFromUrl) : recipeData.servings || 1)
 
         // Check if the current user is the owner of the recipe
         const { data } = await supabase.auth.getUser()
@@ -46,7 +49,7 @@ const RecipePage = () => {
     if (id) {
       loadRecipe()
     }
-  }, [id])
+  }, [id, servingsFromUrl])
 
   const handleFavoriteClick = async () => {
     try {
@@ -84,6 +87,13 @@ const RecipePage = () => {
     }
   }
 
+  const handleServingsChange = (e) => {
+    const value = Number.parseInt(e.target.value)
+    if (value > 0) {
+      setCurrentServings(value)
+    }
+  }
+
   if (loading) {
     return (
       <div className={`${globalStyles.body} ${styles.container}`}>
@@ -108,13 +118,19 @@ const RecipePage = () => {
     )
   }
 
-  // Format ingredients from the recipe data
-  const formattedIngredients = recipe.ingredients.map((item) => ({
-    name: item.ingredients.name,
-    amount: `${item.grams}g`,
-    calories: item.ingredients.calories,
-    grams: Number.parseFloat(item.grams),
-  }))
+  // Format ingredients from the recipe data with adjusted amounts based on servings
+  const formattedIngredients = recipe.ingredients.map((item) => {
+    // Calculate the scaling factor based on current vs original servings
+    const scalingFactor = currentServings / (recipe.servings || 1)
+    const scaledGrams = Number.parseFloat(item.grams) * scalingFactor
+
+    return {
+      name: item.ingredients.name,
+      amount: `${scaledGrams.toFixed(1)}g`,
+      calories: item.ingredients.calories,
+      grams: scaledGrams,
+    }
+  })
 
   // Format dietary tags - using the same approach as ingredients
   const dietaryTags =
@@ -130,8 +146,8 @@ const RecipePage = () => {
     return sum + ingredientCalories
   }, 0)
 
-  // Calculate calories per serving
-  const caloriesPerServing = recipe.servings ? Math.round(totalCalories / recipe.servings) : 0
+  // Calculate calories per serving using current servings
+  const caloriesPerServing = currentServings ? Math.round(totalCalories / currentServings) : 0
 
   // Round total calories to whole number
   const roundedTotalCalories = Math.round(totalCalories)
@@ -170,7 +186,17 @@ const RecipePage = () => {
 
         <div className={styles.recipeMeta}>
           <span>Cooking Time: {recipe.cooking_time} minutes</span>
-          <span>Serving: {recipe.servings} people</span>
+          <span className={styles.servingsContainer}>
+            Servings:
+            <input
+              type="number"
+              min="1"
+              value={currentServings}
+              onChange={handleServingsChange}
+              className={styles.servingsInput}
+              aria-label="Number of servings"
+            />
+          </span>
           <span>Category: {categoryName}</span>
           <span>Author: @{recipe.authorNickname}</span>
         </div>
