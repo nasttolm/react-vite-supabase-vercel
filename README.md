@@ -2,7 +2,8 @@
 
 This is a template project that demonstrates the usage of [React](https://react.dev/), [Vite](https://vite.dev/), [Supabase](https://supabase.com/), and [Vercel](https://vercel.com/).
 
-## Demo and First experiment
+## Demo
+## Example Change
 
 The demo is available [here](https://react-vite-supabase-vercel.vercel.app/).
 

@@ -1,0 +1,414 @@
+.container {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: hidden;
+
+  /* Grid layout implementation */
+  display: grid;
+  grid-template-columns: minmax(20px, 1fr) minmax(auto, 1200px) minmax(20px, 1fr);
+  grid-template-areas:
+    "header header header"
+    "actions actions actions"
+    "hero hero hero"
+    "title title title"
+    "content content content";
+  gap: 20px;
+}
+
+/* Recipe actions */
+.recipeActions {
+  grid-area: actions;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin: 20px 0;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+.deleteButton {
+  composes: button;
+  background-color: #ff5722;
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: #e64a19;
+}
+
+/* Hero image section */
+.recipeHero {
+  grid-area: hero;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.recipeHeroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Title section */
+.recipeTitleWrapper {
+  grid-area: title;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.titleWithFavorite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.recipeTitle {
+  font-size: 42px;
+  font-weight: 600;
+  color: #ff5722;
+  margin: 0;
+  text-align: center;
+}
+
+.favoriteHeart {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #d9d9d9;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.favoriteHeart:hover {
+  transform: scale(1.1);
+}
+
+.favoriteHeart.favorited {
+  color: #ff5722;
+}
+
+.loadingHeart {
+  opacity: 0.5;
+}
+
+.recipeMeta {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 24px;
+  font-size: 18px;
+  color: #4a4a4a;
+}
+
+.dietaryTagsContainer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.dietaryTag {
+  padding: 4px 12px;
+  background-color: #f5f5f5;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Content section with ingredients and instructions */
+.recipeContent {
+  grid-area: content;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  margin-top: 32px;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.caloriesSection {
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.caloriesSection h2 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.caloriesList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.caloriesList li {
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.caloriesList li:last-child {
+  border-bottom: none;
+}
+
+.calorieLabel {
+  font-weight: 500;
+}
+
+.calorieValue {
+  color: #ff5722;
+  font-weight: 600;
+}
+
+.ingredientsSection {
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.ingredientsSection h2 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.ingredientsList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ingredientsList li {
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 16px;
+}
+
+.ingredientsList li:last-child {
+  border-bottom: none;
+}
+
+.recipeDetails {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.descriptionSection,
+.preparationSection {
+  margin-bottom: 32px;
+}
+
+.preparationSection h2 {
+  font-size: 32px;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
+}
+
+.descriptionSection h2 {
+  font-size: 32px;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
+}
+
+.descriptionSection p {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+  text-align: left;
+}
+
+.stepsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.stepsList li {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  color: #ff5722;
+  font-weight: 500;
+  font-size: 16px;
+  min-width: 70px;
+  text-align: left;
+}
+
+.stepText {
+  color: #666;
+  line-height: 1.6;
+  font-size: 16px;
+  text-align: left;
+  flex: 1;
+}
+
+/* Loading and error states */
+.loadingContainer,
+.errorContainer {
+  grid-area: content;
+  text-align: center;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.errorContainer h2 {
+  color: #ff5722;
+}
+
+/* Modal styles for delete confirmation */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modalContent h3 {
+  margin-top: 0;
+  color: #f44336;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  composes: button;
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.cancelButton:hover {
+  background-color: #d5d5d5;
+}
+
+.confirmDelete {
+  composes: deleteButton;
+  padding: 8px 16px;
+}
+
+.orangeButton {
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 16px;
+}
+
+.orangeButton:hover {
+  background-color: #e64a19;
+}
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "actions"
+      "hero"
+      "title"
+      "content";
+  }
+
+  .recipeContent {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .recipeMeta {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .recipeTitle {
+    font-size: 32px;
+  }
+
+  .recipeActions {
+    margin-top: 16px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .titleWithFavorite {
+    gap: 8px;
+  }
+
+  .favoriteHeart {
+    font-size: 28px;
+  }
+}
+
