@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 
 import "./index.css";
 import App from "./App.jsx";
-// import AppBar from "./containers/AppBar";
+import AppBar from "./containers/AppBar";
 import AuthProvider from "./context/AuthContext.jsx";
 // import githubLogo from "/github.svg";
 import SignIn from "./pages/auth/SignIn.jsx";
@@ -18,6 +18,13 @@ import Dashboard from "./pages/dashboard.jsx";
 import UserProfile from "./pages/user-profile";
 import CreateProfile from "./pages/create-profile"
 import SupabasePlanner from "./pages/planner.jsx"
+import '@fontsource/source-serif-pro/200.css';
+import '@fontsource/source-serif-pro/300.css';
+import '@fontsource/source-serif-pro/400.css';
+import '@fontsource/source-serif-pro/600.css';
+import '@fontsource/source-serif-pro/700.css';
+import '@fontsource/source-serif-pro/900.css';
+
 
 createRoot(document.getElementById("root")).render(
   <div
@@ -36,7 +43,7 @@ createRoot(document.getElementById("root")).render(
     >
       <StrictMode>
         <AuthProvider>
-          {/* <AppBar /> */}
+          <AppBar />
           <BrowserRouter>
             <Routes>
               <Route index path="/" element={<App />} />

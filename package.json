@@ -12,6 +12,8 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource-variable/source-serif-4": "^5.2.6",
+    "@fontsource/source-serif-pro": "^5.2.5",
     "@mui/icons-material": "^6.4.0",
     "@mui/material": "^6.4.0",
     "@supabase/supabase-js": "^2.47.16",
