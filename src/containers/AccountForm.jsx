@@ -4,7 +4,7 @@ import Button from "@mui/material/Button"
 import PropTypes from "prop-types"
 import TextField from "@mui/material/TextField"
 import styles from "../styles/auth.module.css"
-import Logo from "../../public/Logo.svg"
+// import Logo from "../../public/Logo.svg"
 import { useNavigate } from "react-router"
 import { useState } from "react"
 import supabase from "../utils/supabase"
@@ -63,7 +63,7 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
       <div className={styles.header}>
         <div className={styles.icon}>
           <div className={styles.logo}>
-            <img src={Logo || "/placeholder.svg"} alt="logo" />
+            <img src={"../Logo.svg"} alt="logo" />
           </div>
         </div>
         <h1 className={styles.title}>{isSignUp ? "Create Account" : "Welcome Back"}</h1>
@@ -217,7 +217,7 @@ AccountForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onFacebookAuth: PropTypes.func,
   isSignUp: PropTypes.bool,
-}
+};
 
 AccountForm.defaultProps = {
   onFacebookAuth: () => {},
