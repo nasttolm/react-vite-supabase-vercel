@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -35,52 +33,53 @@ const Profile = () => {
   const [notificationTime, setNotificationTime] = useState("18:00")
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
+    const loadUserProfile = async () => {
+      try {
+        // Get current user session (we know it exists because of ProtectedRoute)
+        const { data } = await supabase.auth.getSession()
+        setUser(data.session.user)
 
-      if (!data.session) {
-        toast.error("You must be logged in to view your profile")
-        navigate("/auth/sign-in")
-        return
+        // Fetch user profile
+        const { data: profileData, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", data.session.user.id)
+          .single()
+
+        if (error) {
+          // If profile doesn't exist, redirect to create profile
+          toast.info("Please create your profile")
+          navigate("/create-profile")
+          return
+        }
+
+        // Set profile data
+        setProfile(profileData)
+        setFirstName(profileData.first_name || "")
+        setLastName(profileData.last_name || "")
+        setNickname(profileData.nickname || "")
+        setAvatarUrl(profileData.avatar_url || "")
+
+        // Set notification settings
+        const notificationSettings = profileData.notification_settings || {
+          enabled: false,
+          day: "sunday",
+          time: "18:00",
+        }
+
+        setNotificationsEnabled(notificationSettings.enabled)
+        setNotificationDay(notificationSettings.day)
+        setNotificationTime(notificationSettings.time)
+      } catch (error) {
+        console.error("Error loading profile:", error)
+        toast.error("Failed to load profile")
+      } finally {
+        setLoading(false)
       }
-
-      setUser(data.session.user)
-
-      const { data: profileData, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", data.session.user.id)
-        .single()
-
-      if (error) {
-        toast.info("Please create your profile")
-        navigate("/create-profile")
-        return
-      }
-
-      setProfile(profileData)
-      setFirstName(profileData.first_name || "")
-      setLastName(profileData.last_name || "")
-      setNickname(profileData.nickname || "")
-      setAvatarUrl(profileData.avatar_url || "")
-
-      const notificationSettings = profileData.notification_settings || {
-        enabled: false,
-        day: "sunday",
-        time: "18:00",
-      }
-
-      setNotificationsEnabled(notificationSettings.enabled)
-      setNotificationDay(notificationSettings.day)
-      setNotificationTime(notificationSettings.time)
-
-      setLoading(false)
     }
 
-    checkAuth()
+    loadUserProfile()
   }, [navigate])
-
-  
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]
@@ -421,4 +420,3 @@ const Profile = () => {
 }
 
 export default Profile
-
