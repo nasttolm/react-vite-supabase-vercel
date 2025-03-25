@@ -781,9 +781,6 @@ export default function SupabasePlanner() {
               <p className={styles.emptyStateDescription}>
                 Configure parameters in the sidebar and click "Create Meal Plan"
               </p>
-              <div className={styles.emptyStateImage}>
-                <img src="/placeholder.svg" alt="Meal planning" width={300} height={200} />
-              </div>
             </div>
           </div>
         )}
