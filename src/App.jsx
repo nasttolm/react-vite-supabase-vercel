@@ -10,8 +10,22 @@ import anastasia from "../public/anastasia.png";
 import shakhzod from "../public/shakhzod.png";
 import whiteLogo from "../public/whiteLogo.png";
 
-
 function App() {
+  const handleGetStarted = () => {
+    window.location.href = "/auth/sign-up";
+  };
+
+  const handleLearnMore = () => {
+    const whyChooseSection = document.getElementById("why-choose-section");
+    if (whyChooseSection) {
+      whyChooseSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleSubscribe = () => {
+    alert("Thank you for subscribing!");
+  };
+
   return (
     <>
     <div className={styles.landingContainer}>
@@ -19,7 +33,7 @@ function App() {
           <div className={styles.left}>
             <div className={styles.tag}>
                 <div className={styles.tagIcon}>
-                  <img src={tagIcon} alt="tag icon" />
+                  <img src={tagIcon || "/placeholder.svg"} alt="tag icon" />
                 </div>
 
                 <div className={styles.tagText}>
@@ -39,14 +53,24 @@ function App() {
             </div> 
 
             <div className={styles.heroButtons}>
-              <button className={styles.heroMainBtn}>Get Started</button>
-              <button className={styles.heroSecondaryBtn}>Learn More</button>
+              <button 
+                className={styles.heroMainBtn}
+                onClick={handleGetStarted}
+              >
+                Get Started
+              </button>
+              <button 
+                className={styles.heroSecondaryBtn}
+                onClick={handleLearnMore}
+              >
+                Learn More
+              </button>
             </div>
 
             <div className={styles.stats}>
               <div className={styles.statsLeft}>
                 <div className={styles.leftStatIcon}>
-                  <img src={outlineFork} alt="fork icon" />
+                  <img src={outlineFork || "/placeholder.svg"} alt="fork icon" />
                 </div>
 
                 <div className={styles.leftStatText}>
@@ -59,24 +83,24 @@ function App() {
 
               <div className={styles.statsRight}>
                   <div className={styles.rightStatIcon}>
-                    <img src={star} alt="star icon" />
+                    <img src={star || "/placeholder.svg"} alt="star icon" />
                   </div>
                   <p>3.7</p>
               </div>
             </div>
           </div>
           <div className={styles.right}>
-            <img src={heroImg} alt="hero" />
+            <img src={heroImg || "/placeholder.svg"} alt="hero" />
           </div>
         </div>
 
         <h1 className={styles.sectionTitle}>One Place For <br></br> <span>Thousands</span> Recipes</h1>
 
         <div className={styles.selectionImg}>
-          <img src={Selection} alt="selection" />
+          <img src={Selection || "/placeholder.svg"} alt="selection" />
         </div>
         <p className={styles.sectionTag}>Top 3 Reasons</p>
-        <h1 className={styles.sectionTitle}>Why Choose</h1>
+        <h1 className={styles.sectionTitle} id="why-choose-section">Why Choose</h1>
 
         <div className={styles.options}>
           <div className={styles.outlineOption}>
@@ -99,26 +123,30 @@ function App() {
         <h1 className={styles.sectionTitle}>Meet <span>Our Team</span></h1>
 
         <div className={styles.team}>
-          <img src={aymene} alt="aymene" />
-          <img src={anastasia} alt="anastasia" />
-          <img src={shakhzod} alt="shakhzod" />
+          <img src={aymene || "/placeholder.svg"} alt="aymene" />
+          <img src={anastasia || "/placeholder.svg"} alt="anastasia" />
+          <img src={shakhzod || "/placeholder.svg"} alt="shakhzod" />
         </div>
 
       <div className={styles.newsLetterContainer}>
         <div className={styles.newsLetter}>
           <h1>Join Our News Letter to recieve great offers and news exclusively from us</h1>
           <div className={styles.newsLetterBottom}>
-            <input type="emai" placeholder="your@email.com"/>
+            <input type="email" placeholder="your@email.com"/>
 
-            <button className={styles.newsletterBtn}>Subscribe</button>
+            <button 
+              className={styles.newsLetterBtn}
+              onClick={handleSubscribe}
+            >
+              Subscribe
+            </button>
           </div>
         </div>
         </div>
 
         <div className={styles.footer}>
-
           <div className={styles.footerLogo}>
-            <img src={whiteLogo} alt="logo" />
+            <img src={whiteLogo || "/placeholder.svg"} alt="logo" />
           </div>
 
           <div className={styles.footerText}>
