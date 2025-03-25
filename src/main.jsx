@@ -9,13 +9,14 @@ import AppBar from "./containers/AppBar";
 import AuthProvider from "./context/AuthContext.jsx";
 import SignIn from "./pages/auth/SignIn.jsx";
 import SignUp from "./pages/auth/SignUp.jsx";
-import UpdatePassword from "./pages/auth/update-password"
-import CreateRecipe from "./pages/create-recipe"
-import RecipePage from "./pages/recipe-page"
+import UpdatePassword from "./pages/auth/update-password";
+import CreateRecipe from "./pages/create-recipe";
+import RecipePage from "./pages/recipe-page";
 import Dashboard from "./pages/dashboard.jsx";
 import UserProfile from "./pages/user-profile";
-import CreateProfile from "./pages/create-profile"
-import SupabasePlanner from "./pages/planner.jsx"
+import CreateProfile from "./pages/create-profile";
+import SupabasePlanner from "./pages/planner.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
 import '@fontsource/source-serif-pro/200.css';
 import '@fontsource/source-serif-pro/300.css';
 import '@fontsource/source-serif-pro/400.css';
@@ -43,17 +44,48 @@ createRoot(document.getElementById("root")).render(
           <BrowserRouter>
             <AppBar />
             <Routes>
+              {/* Public routes */}
               <Route index path="/" element={<App />} />
               <Route path="/auth/sign-in" element={<SignIn />} />
               <Route path="/auth/sign-up" element={<SignUp />} />
               <Route path="/auth/update-password" element={<UpdatePassword />} />
-              <Route path="/create-recipe" element={<CreateRecipe />} />
-              <Route path="/recipes/:id" element={<RecipePage />} />
-              <Route path="/recipes" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard/>}/>
-              <Route path="/profile/:userId?" element={<UserProfile />} />
-              <Route path="/create-profile" element={<CreateProfile />} />
-              <Route path="/planner" element={<SupabasePlanner />} />
+              
+              {/* Protected routes */}
+              <Route path="/create-recipe" element={
+                <ProtectedRoute>
+                  <CreateRecipe />
+                </ProtectedRoute>
+              } />
+              <Route path="/recipes/:id" element={
+                <ProtectedRoute>
+                  <RecipePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/recipes" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard/>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile/:userId?" element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/create-profile" element={
+                <ProtectedRoute>
+                  <CreateProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/planner" element={
+                <ProtectedRoute>
+                  <SupabasePlanner />
+                </ProtectedRoute>
+              } />
             </Routes>
           </BrowserRouter>
         </AuthProvider>
