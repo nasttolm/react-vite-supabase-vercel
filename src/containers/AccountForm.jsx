@@ -18,6 +18,16 @@ const validationSchema = yup.object({
     .required("Password is required"),
 })
 
+// Define the base URL for redirect
+const getRedirectUrl = () => {
+  // In production, use the actual domain
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://your-production-domain.com/auth/update-password';
+  }
+  // For development, use localhost
+  return `${window.location.origin}/auth/update-password`;
+}
+
 const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
   const navigate = useNavigate()
   const [resetEmailSent, setResetEmailSent] = useState(false)
@@ -43,7 +53,7 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: window.location.origin + "/auth/update-password",
+        redirectTo: getRedirectUrl(),
       })
 
       if (error) {
@@ -225,4 +235,3 @@ AccountForm.defaultProps = {
 }
 
 export default AccountForm
-
