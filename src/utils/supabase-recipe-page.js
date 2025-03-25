@@ -23,6 +23,22 @@ export async function getRecipeById(id) {
       }
     }
 
+    // Get author information if user_id exists
+    let authorNickname = "Unknown"
+    if (recipe.user_id) {
+      const { data: userProfile, error: userError } = await supabase
+        .from("user_profiles")
+        .select("nickname, first_name")
+        .eq("id", recipe.user_id)
+        .single()
+
+      if (!userError && userProfile) {
+        authorNickname = userProfile.nickname || userProfile.first_name || "Unknown"
+      } else {
+        console.error("Error fetching user profile:", userError)
+      }
+    }
+
     // Get the recipe ingredients with their details from the ingredients table
     const { data: ingredients, error: ingredientsError } = await supabase
       .from("recipe_ingredients")
@@ -72,6 +88,7 @@ export async function getRecipeById(id) {
     return {
       ...recipe,
       categoryName,
+      authorNickname,
       ingredients,
       diets,
       isFavorited,

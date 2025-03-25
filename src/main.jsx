@@ -17,12 +17,15 @@ import RecipePage from "./pages/recipe-page"
 import Dashboard from "./pages/dashboard.jsx";
 import UserProfile from "./pages/user-profile";
 import CreateProfile from "./pages/create-profile"
+import SupabasePlanner from "./pages/planner.jsx"
 import '@fontsource/source-serif-pro/200.css';
 import '@fontsource/source-serif-pro/300.css';
 import '@fontsource/source-serif-pro/400.css';
 import '@fontsource/source-serif-pro/600.css';
 import '@fontsource/source-serif-pro/700.css';
 import '@fontsource/source-serif-pro/900.css';
+
+
 createRoot(document.getElementById("root")).render(
   <div
     style={{
@@ -52,6 +55,7 @@ createRoot(document.getElementById("root")).render(
               <Route index path="/dashboard" element={<Dashboard/>}/>
               <Route path="/profile/:userId?" element={<UserProfile />} />
               <Route path="/create-profile" element={<CreateProfile />} />
+              <Route path="/planner" element={<SupabasePlanner />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

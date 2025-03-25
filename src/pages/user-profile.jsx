@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -12,7 +14,6 @@ import InputLabel from "@mui/material/InputLabel"
 import supabase from "../utils/supabase"
 import styles from "../styles/user-profile.module.css"
 
-
 const Profile = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
@@ -24,6 +25,7 @@ const Profile = () => {
   // Profile data
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
+  const [nickname, setNickname] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [avatarFile, setAvatarFile] = useState(null)
 
@@ -59,6 +61,7 @@ const Profile = () => {
       setProfile(profileData)
       setFirstName(profileData.first_name || "")
       setLastName(profileData.last_name || "")
+      setNickname(profileData.nickname || "")
       setAvatarUrl(profileData.avatar_url || "")
 
       const notificationSettings = profileData.notification_settings || {
@@ -77,6 +80,8 @@ const Profile = () => {
     checkAuth()
   }, [navigate])
 
+  
+
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -85,12 +90,43 @@ const Profile = () => {
     }
   }
 
+  const validateNickname = async (value) => {
+    if (!value.trim()) return false
+
+    // If the nickname hasn't changed, it's valid
+    if (value === profile.nickname) return true
+
+    // Check if nickname is already taken
+    const { data, error } = await supabase.from("user_profiles").select("id").eq("nickname", value).maybeSingle()
+
+    if (error) {
+      console.error("Error checking nickname:", error)
+      return false
+    }
+
+    return !data // Return true if nickname is available (data is null)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!firstName.trim()) {
       toast.error("First name is required")
       return
+    }
+
+    if (!nickname.trim()) {
+      toast.error("Nickname is required")
+      return
+    }
+
+    // Check if nickname is available (only if it changed)
+    if (nickname !== profile.nickname) {
+      const isNicknameAvailable = await validateNickname(nickname)
+      if (!isNicknameAvailable) {
+        toast.error("This nickname is already taken. Please choose another one.")
+        return
+      }
     }
 
     try {
@@ -118,6 +154,7 @@ const Profile = () => {
       const updatedProfile = {
         first_name: firstName,
         last_name: lastName || null,
+        nickname: nickname,
         avatar_url: updatedAvatarUrl,
         notification_settings: {
           enabled: notificationsEnabled,
@@ -183,6 +220,19 @@ const Profile = () => {
                   />
                 </div>
 
+                <div className={styles.inputGroup}>
+                  <TextField
+                    fullWidth
+                    label="Nickname"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    required
+                    variant="outlined"
+                    className={styles.input}
+                    helperText="Your unique nickname"
+                  />
+                </div>
+
                 <div className={styles.sectionTitle}>Notification Settings</div>
 
                 <div className={styles.notificationSettings}>
@@ -244,17 +294,18 @@ const Profile = () => {
               <>
                 <div className={styles.infoSection}>
                   <div className={styles.name}>
-                    {/* <label className={styles.label}>First Name</label> */}
-                    <p className={styles.firstName}>{profile.first_name} {profile.last_name}</p>
+                    <p className={styles.firstName}>
+                      {profile.first_name} {profile.last_name}
+                    </p>
                   </div>
 
-                  {/* <div className={styles.inputGroup}>
-                    <label className={styles.label}>Last Name</label>
-                    <p className={styles.value}>{profile.last_name || "-"}</p>
-                  </div> */}
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Nickname</label>
+                    <p className={styles.value}>@{profile.nickname}</p>
+                  </div>
 
                   <div className={styles.inputGroup}>
-                    {/* <label className={styles.label}>Email</label> */}
+                    <label className={styles.label}>Email</label>
                     <p className={styles.value}>{user.email}</p>
                   </div>
                 </div>
@@ -304,12 +355,13 @@ const Profile = () => {
               style={{ display: "none" }}
               disabled={!isEditing}
             />
-                <div className={isEditing ? styles.avatarEditOverlay : styles.avatarOverlay}
-                 onClick={() => isEditing && document.getElementById("avatar-upload").click()}
-                 style={{ cursor: isEditing ? "pointer" : "default" }}
-                >
-                  <img src="/edit2.svg" alt="Edit" className={styles.editIcon} />
-                </div>
+            <div
+              className={isEditing ? styles.avatarEditOverlay : styles.avatarOverlay}
+              onClick={() => isEditing && document.getElementById("avatar-upload").click()}
+              style={{ cursor: isEditing ? "pointer" : "default" }}
+            >
+              <img src="/edit2.svg" alt="Edit" className={styles.editIcon} />
+            </div>
             <div
               className={isEditing ? styles.avatarWrapperEditing : styles.avatarWrapper}
               onClick={() => isEditing && document.getElementById("avatar-upload").click()}
@@ -320,8 +372,6 @@ const Profile = () => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{firstName.charAt(0).toUpperCase()}</div>
               )}
-
-        
             </div>
           </div>
         </div>
