@@ -14,6 +14,7 @@ import {
   fetchAllCategories,
   fetchRecipesByCategory,
   fetchRecipesByAuthorNickname,
+  fetchMyRecipes,
 } from "../utils/supabase-dashboard"
 
 // Cooking time options for filtering
@@ -43,9 +44,16 @@ export default function Dashboard() {
   // Filter states
   const [selectedCookingTime, setSelectedCookingTime] = useState(null)
   const [showFavorites, setShowFavorites] = useState(false)
-
+  const [showMyRecipes, setShowMyRecipes] = useState(false)
 
   const [authorNickname, setAuthorNickname] = useState("")
+
+  // Debug state to help troubleshoot
+  const [debugInfo, setDebugInfo] = useState({
+    userId: null,
+    myRecipesCount: 0,
+    favoritesCount: 0,
+  })
 
   // Fetch user session
   useEffect(() => {
@@ -53,6 +61,10 @@ export default function Dashboard() {
       const { data } = await supabase.auth.getSession()
       if (data.session) {
         setUser(data.session.user)
+        setDebugInfo((prev) => ({ ...prev, userId: data.session.user.id }))
+
+        // Log user info for debugging
+        console.log("User session:", data.session.user)
       }
     }
 
@@ -96,76 +108,98 @@ export default function Dashboard() {
     const applyFilters = async () => {
       setLoading(true)
 
-      let filtered = []
+      let filtered = [...recipes] // Start with all recipes
+      let appliedFilters = false
 
-  
+      // Author nickname filter
       if (authorNickname.trim()) {
         const authorRecipes = await fetchRecipesByAuthorNickname(authorNickname)
         filtered = authorRecipes
-      } else {
+        appliedFilters = true
+      }
 
-        // First, handle favorites filter
-        if (showFavorites) {
-          if (user) {
-            const favorites = await fetchFavoriteRecipes(user.id)
-            filtered = favorites
-          } else {
-            toast.error("Please sign in to view favorites")
-            setShowFavorites(false)
-            filtered = [...recipes]
-          }
+      // My Recipes filter
+      let myRecipes = []
+      if (showMyRecipes && user) {
+        myRecipes = await fetchMyRecipes(user.id)
+        console.log("My recipes:", myRecipes) // Debug log
+        setDebugInfo((prev) => ({ ...prev, myRecipesCount: myRecipes.length }))
+
+        if (!appliedFilters) {
+          filtered = myRecipes
         } else {
-          filtered = [...recipes]
+          // If we already applied filters, find intersection
+          const myRecipeIds = new Set(myRecipes.map((r) => r.id))
+          filtered = filtered.filter((recipe) => myRecipeIds.has(recipe.id))
         }
+        appliedFilters = true
+      }
 
-        // Then, handle category filter
-        if (activeCategoryId) {
-          // If we're already filtering by favorites, filter within those
-          if (showFavorites) {
-            filtered = filtered.filter((recipe) => recipe.category_id === activeCategoryId)
+      // Favorites filter
+      let favorites = []
+      if (showFavorites && user) {
+        favorites = await fetchFavoriteRecipes(user.id)
+        console.log("Favorites:", favorites) // Debug log
+        setDebugInfo((prev) => ({ ...prev, favoritesCount: favorites.length }))
+
+        if (!appliedFilters) {
+          filtered = favorites
+        } else {
+          // If we already applied filters, find union with current filtered recipes
+          const filteredIds = new Set(filtered.map((r) => r.id))
+          const uniqueFavorites = favorites.filter((recipe) => !filteredIds.has(recipe.id))
+          filtered = [...filtered, ...uniqueFavorites]
+        }
+        appliedFilters = true
+      }
+
+      // Category filter
+      if (activeCategoryId) {
+        if (appliedFilters) {
+          // Filter within current results
+          filtered = filtered.filter((recipe) => recipe.category_id === activeCategoryId)
+        } else {
+          // Get all recipes in this category
+          const categoryRecipes = await fetchRecipesByCategory(activeCategoryId)
+          filtered = categoryRecipes
+          appliedFilters = true
+        }
+      }
+
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        filtered = filtered.filter(
+          (recipe) => recipe.title?.toLowerCase().includes(query) || recipe.description?.toLowerCase().includes(query),
+        )
+      }
+
+      // Diet filters
+      if (selectedDietIds.length > 0) {
+        // Get all recipes that have ANY of the selected diets
+        const dietRecipes = await Promise.all(selectedDietIds.map((dietId) => fetchRecipesByDiets([dietId])))
+
+        // Combine all recipes and remove duplicates
+        const allDietRecipes = dietRecipes.flat()
+        const uniqueDietRecipeIds = new Set(allDietRecipes.map((r) => r.id))
+
+        // Find intersection with current filtered recipes
+        filtered = filtered.filter((recipe) => uniqueDietRecipeIds.has(recipe.id))
+      }
+
+      // Cooking time filter
+      if (selectedCookingTime) {
+        filtered = filtered.filter((recipe) => {
+          const cookingTime = Number.parseInt(recipe.cooking_time || recipe.prep_time || 0)
+
+          if (selectedCookingTime === 30) {
+            return cookingTime < 30
+          } else if (selectedCookingTime === 60) {
+            return cookingTime >= 30 && cookingTime <= 60
           } else {
-            // Otherwise, get all recipes in this category
-            const categoryRecipes = await fetchRecipesByCategory(activeCategoryId)
-            filtered = categoryRecipes
+            return cookingTime > 60
           }
-        }
-
-        // Apply search filter for recipes
-        if (searchQuery) {
-          const query = searchQuery.toLowerCase()
-          filtered = filtered.filter(
-            (recipe) =>
-              recipe.title?.toLowerCase().includes(query) || recipe.description?.toLowerCase().includes(query),
-          )
-        }
-
-        // Apply diet filters - Changed to OR logic
-        if (selectedDietIds.length > 0) {
-          // Get all recipes that have ANY of the selected diets
-          const dietRecipes = await Promise.all(selectedDietIds.map((dietId) => fetchRecipesByDiets([dietId])))
-
-          // Combine all recipes and remove duplicates
-          const allDietRecipes = dietRecipes.flat()
-          const uniqueDietRecipeIds = new Set(allDietRecipes.map((r) => r.id))
-
-          // Find intersection with current filtered recipes
-          filtered = filtered.filter((recipe) => uniqueDietRecipeIds.has(recipe.id))
-        }
-
-        // Apply cooking time filter
-        if (selectedCookingTime) {
-          filtered = filtered.filter((recipe) => {
-            const cookingTime = Number.parseInt(recipe.cooking_time || recipe.prep_time || 0)
-
-            if (selectedCookingTime === 30) {
-              return cookingTime < 30
-            } else if (selectedCookingTime === 60) {
-              return cookingTime >= 30 && cookingTime <= 60
-            } else {
-              return cookingTime > 60
-            }
-          })
-        }
+        })
       }
 
       setFilteredRecipes(filtered)
@@ -183,6 +217,7 @@ export default function Dashboard() {
     selectedDietIds,
     selectedCookingTime,
     showFavorites,
+    showMyRecipes,
     recipes,
     user,
     authorNickname,
@@ -205,7 +240,7 @@ export default function Dashboard() {
     })
   }
 
-  // Toggle favorites
+  // Toggle favorites - now doesn't affect My Recipes
   const handleFavoritesToggle = () => {
     if (!user) {
       toast.error("Please sign in to view favorites")
@@ -214,21 +249,29 @@ export default function Dashboard() {
     setShowFavorites(!showFavorites)
   }
 
- 
+  // Toggle my recipes - now doesn't affect Favorites
+  const handleMyRecipesToggle = () => {
+    if (!user) {
+      toast.error("Please sign in to view your recipes")
+      return
+    }
+    setShowMyRecipes(!showMyRecipes)
+  }
+
   const handleAuthorNicknameChange = (e) => {
     setAuthorNickname(e.target.value)
   }
-
 
   const clearAuthorFilter = () => {
     setAuthorNickname("")
   }
 
-  
+  // Update the resetFilters function
   const resetFilters = () => {
     setSelectedDietIds([])
     setSelectedCookingTime(null)
     setShowFavorites(false)
+    setShowMyRecipes(false)
     setActiveCategory("All")
     setActiveCategoryId(null)
     setAuthorNickname("")
@@ -246,14 +289,13 @@ export default function Dashboard() {
         <div className={sidebarStyles.filtersContainer}>
           <div className={sidebarStyles.filtersHeader}>
             <h2 className={sidebarStyles.filtersTitle}>FILTERS</h2>
-            {(selectedDietIds.length > 0 || selectedCookingTime || showFavorites) && (
+            {(selectedDietIds.length > 0 || selectedCookingTime || showFavorites || showMyRecipes) && (
               <button className={sidebarStyles.resetButton} onClick={resetFilters}>
                 Reset All
               </button>
             )}
           </div>
 
-          {/* Favorites Filter - Custom styled button */}
           <h3 className={sidebarStyles.filterGroupTitle}>View</h3>
           <div className={sidebarStyles.filtersList}>
             <button
@@ -272,6 +314,24 @@ export default function Dashboard() {
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
               Favorites Only
+            </button>
+
+            <button
+              className={`${sidebarStyles.favoriteButton} ${showMyRecipes ? sidebarStyles.favoriteActive : ""}`}
+              onClick={handleMyRecipesToggle}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill={showMyRecipes ? "#ff5722" : "none"}
+                stroke={showMyRecipes ? "#ff5722" : "currentColor"}
+                strokeWidth="2"
+                className={sidebarStyles.favoriteIcon}
+              >
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+              </svg>
+              My Recipes
             </button>
           </div>
 
@@ -398,6 +458,13 @@ export default function Dashboard() {
           ) : filteredRecipes.length === 0 ? (
             <div className={styles.emptyState}>
               <p>No recipes found. Try adjusting your filters or search query.</p>
+              {/* Debug info */}
+              {process.env.NODE_ENV === "development" && (
+                <div style={{ marginTop: "20px", fontSize: "12px", color: "#666", textAlign: "left" }}>
+                  <p>Debug Info:</p>
+                  <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+                </div>
+              )}
             </div>
           ) : (
             <div className={styles.recipeList}>

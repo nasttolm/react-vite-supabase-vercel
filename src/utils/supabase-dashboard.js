@@ -915,6 +915,28 @@ export const fetchRecipesByAuthorNickname = async (nickname) => {
   }
 }
 
+export async function fetchMyRecipes(userId) {
+  try {
+    console.log("Fetching recipes for user ID:", userId)
+
+    // Get all recipes without additional relations
+    const { data: allRecipes, error: allError } = await supabase.from("recipes").select("*")
+
+    if (!allError && allRecipes) {
+      // Filter on the client side
+      const filteredRecipes = allRecipes.filter((recipe) => recipe.user_id === userId || recipe.author_id === userId)
+      console.log(`Found ${filteredRecipes.length || 0} recipes via client-side filtering`)
+      return filteredRecipes
+    }
+
+    // If something went wrong, return an empty array
+    return []
+  } catch (error) {
+    console.error("Error in fetchMyRecipes:", error)
+    return []
+  }
+}
+
 
 export default {
   fetchAllRecipes,
