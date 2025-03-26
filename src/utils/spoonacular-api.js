@@ -73,44 +73,51 @@ export async function getSpoonacularIngredientInfo(id) {
   }
 }
 
-// Update saveSpoonacularIngredient function to save measurement units
 export async function saveSpoonacularIngredient(ingredientData, supabase) {
   try {
-    // Check if this ingredient already exists in our database
-    const spoonacularId = ingredientData.id.replace("spoonacular_", "")
+    // Check if this is a Spoonacular ingredient (id starts with "spoonacular_")
+    if (typeof ingredientData.id === 'string' && ingredientData.id.startsWith("spoonacular_")) {
+      // Extract the numeric ID
+      const spoonacularId = ingredientData.id.replace("spoonacular_", "")
 
-    const { data: existingIngredient } = await supabase
-      .from("ingredients")
-      .select("id")
-      .eq("spoonacular_id", spoonacularId)
-      .single()
+      // Check if this ingredient already exists in our database
+      const { data: existingIngredient } = await supabase
+        .from("ingredients")
+        .select("id")
+        .eq("spoonacular_id", spoonacularId)
+        .single()
 
-    if (existingIngredient) {
-      // If the ingredient already exists, return its ID
-      return { id: existingIngredient.id }
+      if (existingIngredient) {
+        // If the ingredient already exists, return its ID
+        return { id: existingIngredient.id }
+      }
+
+      // Prepare data for saving
+      const ingredientToSave = {
+        name: ingredientData.name,
+        calories: ingredientData.calories,
+        spoonacular_id: spoonacularId,
+        source: "spoonacular",
+        metric_unit: ingredientData.metric_unit || "g",
+        metric_value: ingredientData.metric_value || 100,
+        us_unit: ingredientData.us_unit || "oz",
+        us_value: ingredientData.us_value || 3.5,
+        image_url: ingredientData.image,
+      }
+
+      console.log("Saving Spoonacular ingredient with data:", ingredientToSave)
+
+      // Save to our database
+      const { data, error } = await supabase.from("ingredients").insert(ingredientToSave).select().single()
+
+      if (error) throw error
+
+      return data
+    } else {
+      // This is already a local ingredient, just return it
+      console.log("Using existing local ingredient:", ingredientData)
+      return ingredientData
     }
-
-    // Prepare data for saving
-    const ingredientToSave = {
-      name: ingredientData.name,
-      calories: ingredientData.calories,
-      spoonacular_id: spoonacularId,
-      source: "spoonacular",
-      metric_unit: ingredientData.metric_unit || "g",
-      metric_value: ingredientData.metric_value || 100,
-      us_unit: ingredientData.us_unit || "oz",
-      us_value: ingredientData.us_value || 3.5,
-      image_url: ingredientData.image,
-    }
-
-    console.log("Saving ingredient with data:", ingredientToSave)
-
-    // Save to our database
-    const { data, error } = await supabase.from("ingredients").insert(ingredientToSave).select().single()
-
-    if (error) throw error
-
-    return data
   } catch (error) {
     console.error("Error saving Spoonacular ingredient:", error)
     throw error

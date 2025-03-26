@@ -31,7 +31,7 @@ export async function uploadRecipeImage(file) {
   }
 }
 
-// Update searchIngredients function to return measurement units and calories
+// Updated searchIngredients function to check database first
 export async function searchIngredients(query) {
   try {
     // If the query is empty, return an empty array
@@ -39,7 +39,7 @@ export async function searchIngredients(query) {
       return []
     }
 
-    // Search in our database
+    // Search in our database first
     const { data: localIngredients, error } = await supabase
       .from("ingredients")
       .select("id, name, calories, spoonacular_id, metric_unit, metric_value, us_unit, us_value, source")
@@ -58,10 +58,15 @@ export async function searchIngredients(query) {
         : `${ingredient.calories} kcal/100g`,
     }))
 
+    // If we found enough results in our database (e.g., 5 or more), don't query Spoonacular
+    if (localResults.length >= 5) {
+      return localResults;
+    }
+
     // Get list of spoonacular_ids that already exist in local database
     const existingSpoonacularIds = localIngredients.filter((ing) => ing.spoonacular_id).map((ing) => ing.spoonacular_id)
 
-    // Search in Spoonacular API
+    // Search in Spoonacular API only if we don't have enough local results
     const spoonacularResults = await searchSpoonacularIngredients(query, 5)
 
     // Filter Spoonacular results to exclude those already in the database
@@ -337,4 +342,3 @@ export async function getRecipeById(id) {
     throw error
   }
 }
-
