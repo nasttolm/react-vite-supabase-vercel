@@ -55,7 +55,7 @@ export async function getRecipeById(id) {
     if (ingredientsError) throw ingredientsError
 
     // Get the recipe diets with their details from the diets table
-    const { data: diets, error: dietsError } = await supabase
+    const { data: dietData, error: dietsError } = await supabase
       .from("recipe_diets")
       .select(`
         diet_id,
@@ -69,6 +69,9 @@ export async function getRecipeById(id) {
     if (dietsError) {
       console.error("Error fetching recipe diets:", dietsError)
     }
+
+    // Format diet data the same way as in fetchAllRecipes
+    const diets = dietData ? dietData.map((item) => item.diets) : []
 
     // Check if recipe is favorited by current user
     const { data: user } = await supabase.auth.getUser()

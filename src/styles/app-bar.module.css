@@ -2,7 +2,8 @@
 
     .appBar {
         box-sizing: border-box;
-        width: 100%;
+        width: calc(100% - 280px); 
+        margin-left: 280px; 
         height: max-content;
         display: flex;
         flex-direction: row;
