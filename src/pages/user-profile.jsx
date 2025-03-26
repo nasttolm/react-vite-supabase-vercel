@@ -317,7 +317,10 @@ const Profile = () => {
                   />
                 </div>
 
-                <div className={styles.sectionTitle}>Notification Settings</div>
+                <div className={styles.sectionTitle}>
+                  Notification Settings
+                  <span className={styles.comingSoon}>COMING SOON</span>
+                </div>
 
                 <div className={styles.notificationSettings}>
                   <FormControlLabel
@@ -372,6 +375,10 @@ const Profile = () => {
                       </div>
                     </>
                   )}
+                  <p className={styles.notificationNote}>
+                    You can configure notification settings now, but notifications are currently under development and
+                    will not be sent until the feature is fully implemented.
+                  </p>
                 </div>
               </>
             ) : (
@@ -406,7 +413,10 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className={styles.sectionTitle}>Notification Settings</div>
+                <div className={styles.sectionTitle}>
+                  Notification Settings
+                  <span className={styles.comingSoon}>COMING SOON</span>
+                </div>
 
                 <div className={styles.infoSection}>
                   <div className={styles.inputGroup}>

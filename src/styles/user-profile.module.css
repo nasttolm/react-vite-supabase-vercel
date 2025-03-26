@@ -295,3 +295,23 @@
   }
 }
 
+/* Coming Soon label */
+.comingSoon {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffd700;
+  background-color: #ff5722;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Notification note */
+.notificationNote {
+  font-size: 12px;
+  color: #666;
+  margin-top: 10px;
+  font-style: italic;
+}
+

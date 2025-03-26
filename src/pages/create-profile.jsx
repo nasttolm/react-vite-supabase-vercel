@@ -198,11 +198,14 @@ const CreateProfile = () => {
                 required
                 variant="outlined"
                 className={styles.input}
-                helperText="Choose a unique nickname for your profile"
+                helperText="Choose a unique nickname for your profile. You can only change it once every 24 hours."
               />
             </div>
 
-            <div className={styles.sectionTitle}>Notification Settings</div>
+            <div className={styles.sectionTitle}>
+              Notification Settings
+              <span className={styles.comingSoon}>COMING SOON</span>
+            </div>
 
             <div className={styles.notificationSettings}>
               <FormControlLabel
@@ -257,6 +260,10 @@ const CreateProfile = () => {
                   </div>
                 </>
               )}
+              <p className={styles.notificationNote}>
+                You can configure notification settings now, but notifications are currently under development and will
+                not be sent until the feature is fully implemented.
+              </p>
             </div>
           </div>
 
@@ -274,7 +281,7 @@ const CreateProfile = () => {
                 <img src={avatarUrl || "/placeholder.svg"} alt="Profile" className={styles.avatarImage} />
               ) : (
                 <div className={styles.avatarPlaceholder}>
-                  <svg width="32" height="32" viewBox="0 0 0 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M12 5V19M5 12H19"
                       stroke="currentColor"
