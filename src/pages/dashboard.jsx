@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -15,7 +13,7 @@ import {
   fetchRecipesByDiets,
   fetchAllCategories,
   fetchRecipesByCategory,
-  fetchRecipesByAuthorNickname, // Import the missing function
+  fetchRecipesByAuthorNickname,
 } from "../utils/supabase-dashboard"
 
 // Cooking time options for filtering
