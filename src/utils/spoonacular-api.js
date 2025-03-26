@@ -15,6 +15,13 @@ export async function searchSpoonacularIngredients(query, number = 10) {
     const url = `${SPOONACULAR_BASE_URL}/food/ingredients/search?apiKey=${SPOONACULAR_API_KEY}&query=${encodeURIComponent(query)}&number=${number}&metaInformation=true`
 
     const response = await fetch(url)
+    
+    // Handle API rate limit or payment required errors
+    if (response.status === 402) {
+      console.error("Spoonacular API rate limit reached")
+      throw new Error("API rate limit reached. Please try again later or use ingredients from our database.")
+    }
+    
     if (!response.ok) {
       throw new Error(`Spoonacular API error: ${response.status}`)
     }
@@ -31,7 +38,12 @@ export async function searchSpoonacularIngredients(query, number = 10) {
     }))
   } catch (error) {
     console.error("Error searching Spoonacular ingredients:", error)
-    return []
+    // Rethrow the error with a user-friendly message
+    if (error.message.includes("rate limit")) {
+      throw error; // Already has a user-friendly message
+    } else {
+      throw new Error("Unable to search external ingredient database. Please try again later.")
+    }
   }
 }
 
@@ -39,11 +51,18 @@ export async function searchSpoonacularIngredients(query, number = 10) {
 export async function getSpoonacularIngredientInfo(id) {
   try {
     // Extract numeric ID if an ID with prefix is passed
-    const numericId = id.toString().replace("spoonacular_", "")
+    const numericId = typeof id === 'string' ? id.replace("spoonacular_", "") : id
 
     const url = `${SPOONACULAR_BASE_URL}/food/ingredients/${numericId}/information?apiKey=${SPOONACULAR_API_KEY}&amount=100&unit=grams`
 
     const response = await fetch(url)
+    
+    // Handle API rate limit or payment required errors
+    if (response.status === 402) {
+      console.error("Spoonacular API rate limit reached")
+      throw new Error("API rate limit reached. Please try again later or use ingredients from our database.")
+    }
+    
     if (!response.ok) {
       throw new Error(`Spoonacular API error: ${response.status}`)
     }
@@ -53,6 +72,11 @@ export async function getSpoonacularIngredientInfo(id) {
     // Find calories information
     const caloriesInfo = data.nutrition?.nutrients?.find((n) => n.name === "Calories")
     const calories = caloriesInfo ? caloriesInfo.amount : 0
+
+    // Check if calories information is available
+    if (!caloriesInfo || calories === 0) {
+      console.warn(`No calorie information available for ingredient: ${data.name}`)
+    }
 
     return {
       id: `spoonacular_${data.id}`,
@@ -65,14 +89,23 @@ export async function getSpoonacularIngredientInfo(id) {
       metric_value: 100,
       us_unit: "oz",
       us_value: 3.5,
-      caloriesNote: `${calories} kcal per 100g`,
+      caloriesNote: calories > 0 
+        ? `${calories} kcal per 100g` 
+        : "Calorie information not available for this ingredient",
+      hasCalories: calories > 0
     }
   } catch (error) {
     console.error("Error fetching Spoonacular ingredient info:", error)
-    throw error
+    // Rethrow with user-friendly message
+    if (error.message.includes("rate limit")) {
+      throw error; // Already has a user-friendly message
+    } else {
+      throw new Error("Unable to get ingredient information from external database. Please try again later.")
+    }
   }
 }
 
+// Update saveSpoonacularIngredient function to handle both types of ingredients and provide better error messages
 export async function saveSpoonacularIngredient(ingredientData, supabase) {
   try {
     // Check if this is a Spoonacular ingredient (id starts with "spoonacular_")
@@ -90,6 +123,11 @@ export async function saveSpoonacularIngredient(ingredientData, supabase) {
       if (existingIngredient) {
         // If the ingredient already exists, return its ID
         return { id: existingIngredient.id }
+      }
+
+      // Check if calories information is available
+      if (!ingredientData.calories || ingredientData.calories === 0) {
+        throw new Error(`Calorie information not available for ${ingredientData.name}. Please create your own ingredient or choose another.`)
       }
 
       // Prepare data for saving
@@ -120,7 +158,11 @@ export async function saveSpoonacularIngredient(ingredientData, supabase) {
     }
   } catch (error) {
     console.error("Error saving Spoonacular ingredient:", error)
-    throw error
+    // Provide more specific error messages
+    if (error.message.includes("Calorie information not available")) {
+      throw error; // Already has a user-friendly message
+    } else {
+      throw new Error(`Unable to save ingredient: ${error.message}`)
+    }
   }
 }
-

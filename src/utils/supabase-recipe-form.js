@@ -1,5 +1,5 @@
 import supabase from "./supabase"
-import { searchSpoonacularIngredients, getSpoonacularIngredientInfo } from "./spoonacular-api"
+import { searchSpoonacularIngredients, getSpoonacularIngredientInfo, saveSpoonacularIngredient } from "./spoonacular-api"
 
 // Function to upload recipe image to Supabase Storage
 export async function uploadRecipeImage(file) {
@@ -31,7 +31,7 @@ export async function uploadRecipeImage(file) {
   }
 }
 
-// Updated searchIngredients function to check database first
+// Updated searchIngredients function that always tries to use the API
 export async function searchIngredients(query) {
   try {
     // If the query is empty, return an empty array
@@ -39,7 +39,7 @@ export async function searchIngredients(query) {
       return []
     }
 
-    // Search in our database first
+    // First search in our database
     const { data: localIngredients, error } = await supabase
       .from("ingredients")
       .select("id, name, calories, spoonacular_id, metric_unit, metric_value, us_unit, us_value, source")
@@ -56,18 +56,23 @@ export async function searchIngredients(query) {
       caloriesNote: ingredient.metric_unit
         ? `${ingredient.calories} kcal per ${ingredient.metric_value || 100}${ingredient.metric_unit}`
         : `${ingredient.calories} kcal/100g`,
+      hasCalories: ingredient.calories > 0
     }))
-
-    // If we found enough results in our database (e.g., 5 or more), don't query Spoonacular
-    if (localResults.length >= 5) {
-      return localResults;
-    }
 
     // Get list of spoonacular_ids that already exist in local database
     const existingSpoonacularIds = localIngredients.filter((ing) => ing.spoonacular_id).map((ing) => ing.spoonacular_id)
 
-    // Search in Spoonacular API only if we don't have enough local results
-    const spoonacularResults = await searchSpoonacularIngredients(query, 5)
+    // Always try to search in Spoonacular API, but handle errors
+    let spoonacularResults = [];
+    let apiError = null;
+    
+    try {
+      spoonacularResults = await searchSpoonacularIngredients(query, 5);
+    } catch (error) {
+      console.error("Spoonacular API error:", error);
+      apiError = error;
+      // Continue with local results only
+    }
 
     // Filter Spoonacular results to exclude those already in the database
     const filteredSpoonacularResults = spoonacularResults.filter((item) => {
@@ -89,19 +94,36 @@ export async function searchIngredients(query) {
       return a.name.localeCompare(b.name)
     })
 
-    return combinedResults
+    // Return results with API status information
+    return {
+      results: combinedResults,
+      apiUsed: !apiError,
+      apiError: apiError ? apiError.message : null,
+      apiLimitReached: apiError && apiError.message.includes("rate limit")
+    };
   } catch (error) {
     console.error("Error searching ingredients:", error)
-    throw error
+    throw error;
   }
 }
 
-// Update getIngredientInfo function to return measurement units
+// Updated getIngredientInfo function
 export async function getIngredientInfo(id) {
   try {
     // Check if the ingredient is from Spoonacular
     if (id.toString().startsWith("spoonacular_")) {
-      return await getSpoonacularIngredientInfo(id)
+      try {
+        return await getSpoonacularIngredientInfo(id)
+      } catch (apiError) {
+        console.error("Error fetching Spoonacular ingredient info:", apiError)
+        
+        // If this is an API limit error, show a clear message
+        if (apiError.message.includes("rate limit") || apiError.message.includes("402")) {
+          throw new Error("API rate limit reached. Please try again later or use ingredients from our database.")
+        }
+        
+        throw new Error(apiError.message || "Could not get ingredient information from external database.")
+      }
     }
 
     // Otherwise get from our database
@@ -113,14 +135,20 @@ export async function getIngredientInfo(id) {
 
     if (error) throw error
 
+    // Check if calories information is available
+    const hasCalories = data.calories > 0
+
     return {
       ...data,
       source: data.source || "user",
       // Add calorie information per unit
       caloriesPerUnit: data.calories,
-      caloriesNote: data.metric_unit
-        ? `${data.calories} kcal per ${data.metric_value || 100}${data.metric_unit}`
-        : `${data.calories} kcal per 100g`,
+      caloriesNote: data.calories > 0 
+        ? (data.metric_unit
+            ? `${data.calories} kcal per ${data.metric_value || 100}${data.metric_unit}`
+            : `${data.calories} kcal per 100g`)
+        : "Calorie information not available for this ingredient",
+      hasCalories
     }
   } catch (error) {
     console.error("Error fetching ingredient info:", error)
