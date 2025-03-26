@@ -10,7 +10,7 @@ import aymene from "../public/aymene.png"
 import anastasia from "../public/anastasia.png"
 import shakhzod from "../public/shakhzod.png"
 import whiteLogo from "../public/whiteLogo.png"
-import supabase from "./utils/supabase" // Make sure this path is correct
+import supabase from "./utils/supabase" 
 
 function App() {
   const [recipeCount, setRecipeCount] = useState("100+")
@@ -48,8 +48,10 @@ function App() {
     }
   }
 
+  // Function for newsletter subscription - in development
   const handleSubscribe = () => {
     alert("Thank you for subscribing!")
+    // TODO: Implement newsletter subscription functionality
   }
 
   return (
@@ -105,9 +107,9 @@ function App() {
 
               <div className={styles.statsRight}>
                 <div className={styles.rightStatIcon}>
-                  <img src={star || "/placeholder.svg"} alt="star icon" />
+                  <img src={star || "/placeholder.svg"} alt="beta icon" />
                 </div>
-                <p>3.7</p>
+                <p>Beta</p>
               </div>
             </div>
           </div>
@@ -158,11 +160,18 @@ function App() {
 
         <div className={styles.newsLetterContainer}>
           <div className={styles.newsLetter}>
-            <h1>Join Our News Letter to recieve great offers and news exclusively from us</h1>
+            <h1>
+              Join Our Newsletter to receive great offers and news exclusively from us{" "}
+              <span style={{ color: "yellow", fontWeight: "bold" }}>COMING SOON</span>
+            </h1>
             <div className={styles.newsLetterBottom}>
-              <input type="email" placeholder="your@email.com" />
+              <input type="email" placeholder="your@email.com" disabled />
 
-              <button className={styles.newsLetterBtn} onClick={handleSubscribe}>
+              <button
+                className={styles.newsLetterBtn}
+                disabled
+                // onClick={handleSubscribe} - Will be enabled when feature is ready
+              >
                 Subscribe
               </button>
             </div>
