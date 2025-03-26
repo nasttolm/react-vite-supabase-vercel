@@ -24,8 +24,13 @@ const Profile = () => {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [nickname, setNickname] = useState("")
+  const [originalNickname, setOriginalNickname] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [avatarFile, setAvatarFile] = useState(null)
+  const [isNicknameValid, setIsNicknameValid] = useState(null)
+  const [nicknameUpdatedAt, setNicknameUpdatedAt] = useState(null)
+  const [canUpdateNickname, setCanUpdateNickname] = useState(true)
+  const [timeUntilNextUpdate, setTimeUntilNextUpdate] = useState(null)
 
   // Notification settings
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
@@ -58,7 +63,30 @@ const Profile = () => {
         setFirstName(profileData.first_name || "")
         setLastName(profileData.last_name || "")
         setNickname(profileData.nickname || "")
+        setOriginalNickname(profileData.nickname || "")
         setAvatarUrl(profileData.avatar_url || "")
+        setNicknameUpdatedAt(profileData.nickname_updated_at || null)
+
+        // Check if 24 hours have passed since the last nickname update
+        if (profileData.nickname_updated_at) {
+          const lastUpdate = new Date(profileData.nickname_updated_at)
+          const now = new Date()
+          const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60)
+
+          if (hoursSinceUpdate < 24) {
+            setCanUpdateNickname(false)
+
+            // Calculate time until next update
+            const hoursLeft = 24 - hoursSinceUpdate
+            const minutesLeft = Math.floor((hoursLeft - Math.floor(hoursLeft)) * 60)
+            setTimeUntilNextUpdate({
+              hours: Math.floor(hoursLeft),
+              minutes: minutesLeft,
+            })
+          } else {
+            setCanUpdateNickname(true)
+          }
+        }
 
         // Set notification settings
         const notificationSettings = profileData.notification_settings || {
@@ -119,12 +147,32 @@ const Profile = () => {
       return
     }
 
-    // Check if nickname is available (only if it changed)
-    if (nickname !== profile.nickname) {
-      const isNicknameAvailable = await validateNickname(nickname)
-      if (!isNicknameAvailable) {
+    // Check if nickname is being changed
+    const isNicknameChanged = nickname !== originalNickname
+
+    // If nickname is being changed, check if it's allowed
+    if (isNicknameChanged) {
+      // Check if 24 hours have passed
+      if (!canUpdateNickname) {
+        toast.error(
+          `You can only change your nickname once every 24 hours. Please wait ${timeUntilNextUpdate.hours} hours and ${timeUntilNextUpdate.minutes} minutes.`,
+        )
+        return
+      }
+
+      // Check if nickname is valid
+      if (isNicknameValid === false) {
         toast.error("This nickname is already taken. Please choose another one.")
         return
+      }
+
+      // If we haven't validated the nickname yet, do it now
+      if (isNicknameValid === null) {
+        const isValid = await validateNickname(nickname)
+        if (!isValid) {
+          toast.error("This nickname is already taken. Please choose another one.")
+          return
+        }
       }
     }
 
@@ -173,6 +221,15 @@ const Profile = () => {
 
       // Update the local profile state with the new data
       setProfile(data)
+      setOriginalNickname(data.nickname)
+      setNicknameUpdatedAt(data.nickname_updated_at)
+
+      // If nickname was changed, update the canUpdateNickname state
+      if (isNicknameChanged) {
+        setCanUpdateNickname(false)
+        setTimeUntilNextUpdate({ hours: 24, minutes: 0 })
+      }
+
       setIsEditing(false)
       toast.success("Profile updated successfully!")
     } catch (error) {
@@ -181,6 +238,20 @@ const Profile = () => {
     } finally {
       setSaving(false)
     }
+  }
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not available"
+
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
   }
 
   if (loading) {
@@ -224,11 +295,25 @@ const Profile = () => {
                     fullWidth
                     label="Nickname"
                     value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
+                    onChange={(e) => {
+                      setNickname(e.target.value)
+                      // Reset validation state when nickname changes
+                      if (e.target.value !== originalNickname) {
+                        setIsNicknameValid(null)
+                      } else {
+                        setIsNicknameValid(true)
+                      }
+                    }}
                     required
                     variant="outlined"
                     className={styles.input}
-                    helperText="Your unique nickname"
+                    helperText={
+                      nickname !== originalNickname && !canUpdateNickname
+                        ? `You can only change your nickname once every 24 hours. Please wait ${timeUntilNextUpdate.hours} hours and ${timeUntilNextUpdate.minutes} minutes.`
+                        : "Your unique nickname"
+                    }
+                    error={nickname !== originalNickname && !canUpdateNickname}
+                    disabled={nickname !== originalNickname && !canUpdateNickname}
                   />
                 </div>
 
@@ -301,6 +386,18 @@ const Profile = () => {
                   <div className={styles.inputGroup}>
                     <label className={styles.label}>Nickname</label>
                     <p className={styles.value}>@{profile.nickname}</p>
+                    {nicknameUpdatedAt && (
+                      <p className={styles.nicknameUpdateInfo}>
+                        Last updated: {formatDate(nicknameUpdatedAt)}
+                        {!canUpdateNickname && (
+                          <span className={styles.nicknameRestriction}>
+                            {" "}
+                            (You can change your nickname again in {timeUntilNextUpdate.hours} hours and{" "}
+                            {timeUntilNextUpdate.minutes} minutes)
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
 
                   <div className={styles.inputGroup}>
@@ -420,3 +517,4 @@ const Profile = () => {
 }
 
 export default Profile
+
