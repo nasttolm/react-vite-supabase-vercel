@@ -2,16 +2,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { it, describe, expect, beforeEach } from '@jest/globals';
 import SignIn from '../src/pages/auth/SignIn';
 import { supabase } from '../src/utils/supabase';
-
-import { TextEncoder, TextDecoder } from 'util';
-
 import jest from 'jest-mock';
 import { useNavigate } from 'react-router';
 import toast from 'react-hot-toast';
 
 
 
-Object.assign(global, { TextDecoder, TextEncoder });
 // Mock dependencies
 jest.mock('../../utils/supabase', () => ({
     auth: {
