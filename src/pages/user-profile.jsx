@@ -12,7 +12,6 @@ import InputLabel from "@mui/material/InputLabel"
 import supabase from "../utils/supabase"
 import styles from "../styles/user-profile.module.css"
 
-
 const Profile = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
@@ -24,8 +23,14 @@ const Profile = () => {
   // Profile data
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
+  const [nickname, setNickname] = useState("")
+  const [originalNickname, setOriginalNickname] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [avatarFile, setAvatarFile] = useState(null)
+  const [isNicknameValid, setIsNicknameValid] = useState(null)
+  const [nicknameUpdatedAt, setNicknameUpdatedAt] = useState(null)
+  const [canUpdateNickname, setCanUpdateNickname] = useState(true)
+  const [timeUntilNextUpdate, setTimeUntilNextUpdate] = useState(null)
 
   // Notification settings
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
@@ -33,48 +38,75 @@ const Profile = () => {
   const [notificationTime, setNotificationTime] = useState("18:00")
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession()
+    const loadUserProfile = async () => {
+      try {
+        // Get current user session (we know it exists because of ProtectedRoute)
+        const { data } = await supabase.auth.getSession()
+        setUser(data.session.user)
 
-      if (!data.session) {
-        toast.error("You must be logged in to view your profile")
-        navigate("/auth/sign-in")
-        return
+        // Fetch user profile
+        const { data: profileData, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", data.session.user.id)
+          .single()
+
+        if (error) {
+          // If profile doesn't exist, redirect to create profile
+          toast.info("Please create your profile")
+          navigate("/create-profile")
+          return
+        }
+
+        // Set profile data
+        setProfile(profileData)
+        setFirstName(profileData.first_name || "")
+        setLastName(profileData.last_name || "")
+        setNickname(profileData.nickname || "")
+        setOriginalNickname(profileData.nickname || "")
+        setAvatarUrl(profileData.avatar_url || "")
+        setNicknameUpdatedAt(profileData.nickname_updated_at || null)
+
+        // Check if 24 hours have passed since the last nickname update
+        if (profileData.nickname_updated_at) {
+          const lastUpdate = new Date(profileData.nickname_updated_at)
+          const now = new Date()
+          const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60)
+
+          if (hoursSinceUpdate < 24) {
+            setCanUpdateNickname(false)
+
+            // Calculate time until next update
+            const hoursLeft = 24 - hoursSinceUpdate
+            const minutesLeft = Math.floor((hoursLeft - Math.floor(hoursLeft)) * 60)
+            setTimeUntilNextUpdate({
+              hours: Math.floor(hoursLeft),
+              minutes: minutesLeft,
+            })
+          } else {
+            setCanUpdateNickname(true)
+          }
+        }
+
+        // Set notification settings
+        const notificationSettings = profileData.notification_settings || {
+          enabled: false,
+          day: "sunday",
+          time: "18:00",
+        }
+
+        setNotificationsEnabled(notificationSettings.enabled)
+        setNotificationDay(notificationSettings.day)
+        setNotificationTime(notificationSettings.time)
+      } catch (error) {
+        console.error("Error loading profile:", error)
+        toast.error("Failed to load profile")
+      } finally {
+        setLoading(false)
       }
-
-      setUser(data.session.user)
-
-      const { data: profileData, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", data.session.user.id)
-        .single()
-
-      if (error) {
-        toast.info("Please create your profile")
-        navigate("/create-profile")
-        return
-      }
-
-      setProfile(profileData)
-      setFirstName(profileData.first_name || "")
-      setLastName(profileData.last_name || "")
-      setAvatarUrl(profileData.avatar_url || "")
-
-      const notificationSettings = profileData.notification_settings || {
-        enabled: false,
-        day: "sunday",
-        time: "18:00",
-      }
-
-      setNotificationsEnabled(notificationSettings.enabled)
-      setNotificationDay(notificationSettings.day)
-      setNotificationTime(notificationSettings.time)
-
-      setLoading(false)
     }
 
-    checkAuth()
+    loadUserProfile()
   }, [navigate])
 
   const handleAvatarChange = (e) => {
@@ -85,12 +117,63 @@ const Profile = () => {
     }
   }
 
+  const validateNickname = async (value) => {
+    if (!value.trim()) return false
+
+    // If the nickname hasn't changed, it's valid
+    if (value === profile.nickname) return true
+
+    // Check if nickname is already taken
+    const { data, error } = await supabase.from("user_profiles").select("id").eq("nickname", value).maybeSingle()
+
+    if (error) {
+      console.error("Error checking nickname:", error)
+      return false
+    }
+
+    return !data // Return true if nickname is available (data is null)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (!firstName.trim()) {
       toast.error("First name is required")
       return
+    }
+
+    if (!nickname.trim()) {
+      toast.error("Nickname is required")
+      return
+    }
+
+    // Check if nickname is being changed
+    const isNicknameChanged = nickname !== originalNickname
+
+    // If nickname is being changed, check if it's allowed
+    if (isNicknameChanged) {
+      // Check if 24 hours have passed
+      if (!canUpdateNickname) {
+        toast.error(
+          `You can only change your nickname once every 24 hours. Please wait ${timeUntilNextUpdate.hours} hours and ${timeUntilNextUpdate.minutes} minutes.`,
+        )
+        return
+      }
+
+      // Check if nickname is valid
+      if (isNicknameValid === false) {
+        toast.error("This nickname is already taken. Please choose another one.")
+        return
+      }
+
+      // If we haven't validated the nickname yet, do it now
+      if (isNicknameValid === null) {
+        const isValid = await validateNickname(nickname)
+        if (!isValid) {
+          toast.error("This nickname is already taken. Please choose another one.")
+          return
+        }
+      }
     }
 
     try {
@@ -118,6 +201,7 @@ const Profile = () => {
       const updatedProfile = {
         first_name: firstName,
         last_name: lastName || null,
+        nickname: nickname,
         avatar_url: updatedAvatarUrl,
         notification_settings: {
           enabled: notificationsEnabled,
@@ -137,6 +221,15 @@ const Profile = () => {
 
       // Update the local profile state with the new data
       setProfile(data)
+      setOriginalNickname(data.nickname)
+      setNicknameUpdatedAt(data.nickname_updated_at)
+
+      // If nickname was changed, update the canUpdateNickname state
+      if (isNicknameChanged) {
+        setCanUpdateNickname(false)
+        setTimeUntilNextUpdate({ hours: 24, minutes: 0 })
+      }
+
       setIsEditing(false)
       toast.success("Profile updated successfully!")
     } catch (error) {
@@ -145,6 +238,20 @@ const Profile = () => {
     } finally {
       setSaving(false)
     }
+  }
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not available"
+
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
   }
 
   if (loading) {
@@ -183,7 +290,37 @@ const Profile = () => {
                   />
                 </div>
 
-                <div className={styles.sectionTitle}>Notification Settings</div>
+                <div className={styles.inputGroup}>
+                  <TextField
+                    fullWidth
+                    label="Nickname"
+                    value={nickname}
+                    onChange={(e) => {
+                      setNickname(e.target.value)
+                      // Reset validation state when nickname changes
+                      if (e.target.value !== originalNickname) {
+                        setIsNicknameValid(null)
+                      } else {
+                        setIsNicknameValid(true)
+                      }
+                    }}
+                    required
+                    variant="outlined"
+                    className={styles.input}
+                    helperText={
+                      nickname !== originalNickname && !canUpdateNickname
+                        ? `You can only change your nickname once every 24 hours. Please wait ${timeUntilNextUpdate.hours} hours and ${timeUntilNextUpdate.minutes} minutes.`
+                        : "Your unique nickname"
+                    }
+                    error={nickname !== originalNickname && !canUpdateNickname}
+                    disabled={nickname !== originalNickname && !canUpdateNickname}
+                  />
+                </div>
+
+                <div className={styles.sectionTitle}>
+                  Notification Settings
+                  <span className={styles.comingSoon}>COMING SOON</span>
+                </div>
 
                 <div className={styles.notificationSettings}>
                   <FormControlLabel
@@ -238,28 +375,48 @@ const Profile = () => {
                       </div>
                     </>
                   )}
+                  <p className={styles.notificationNote}>
+                    You can configure notification settings now, but notifications are currently under development and
+                    will not be sent until the feature is fully implemented.
+                  </p>
                 </div>
               </>
             ) : (
               <>
                 <div className={styles.infoSection}>
                   <div className={styles.name}>
-                    {/* <label className={styles.label}>First Name</label> */}
-                    <p className={styles.firstName}>{profile.first_name} {profile.last_name}</p>
+                    <p className={styles.firstName}>
+                      {profile.first_name} {profile.last_name}
+                    </p>
                   </div>
 
-                  {/* <div className={styles.inputGroup}>
-                    <label className={styles.label}>Last Name</label>
-                    <p className={styles.value}>{profile.last_name || "-"}</p>
-                  </div> */}
+                  <div className={styles.inputGroup}>
+                    <label className={styles.label}>Nickname</label>
+                    <p className={styles.value}>@{profile.nickname}</p>
+                    {nicknameUpdatedAt && (
+                      <p className={styles.nicknameUpdateInfo}>
+                        Last updated: {formatDate(nicknameUpdatedAt)}
+                        {!canUpdateNickname && (
+                          <span className={styles.nicknameRestriction}>
+                            {" "}
+                            (You can change your nickname again in {timeUntilNextUpdate.hours} hours and{" "}
+                            {timeUntilNextUpdate.minutes} minutes)
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
 
                   <div className={styles.inputGroup}>
-                    {/* <label className={styles.label}>Email</label> */}
+                    <label className={styles.label}>Email</label>
                     <p className={styles.value}>{user.email}</p>
                   </div>
                 </div>
 
-                <div className={styles.sectionTitle}>Notification Settings</div>
+                <div className={styles.sectionTitle}>
+                  Notification Settings
+                  <span className={styles.comingSoon}>COMING SOON</span>
+                </div>
 
                 <div className={styles.infoSection}>
                   <div className={styles.inputGroup}>
@@ -304,12 +461,13 @@ const Profile = () => {
               style={{ display: "none" }}
               disabled={!isEditing}
             />
-                <div className={isEditing ? styles.avatarEditOverlay : styles.avatarOverlay}
-                 onClick={() => isEditing && document.getElementById("avatar-upload").click()}
-                 style={{ cursor: isEditing ? "pointer" : "default" }}
-                >
-                  <img src="/edit2.svg" alt="Edit" className={styles.editIcon} />
-                </div>
+            <div
+              className={isEditing ? styles.avatarEditOverlay : styles.avatarOverlay}
+              onClick={() => isEditing && document.getElementById("avatar-upload").click()}
+              style={{ cursor: isEditing ? "pointer" : "default" }}
+            >
+              <img src="/edit2.svg" alt="Edit" className={styles.editIcon} />
+            </div>
             <div
               className={isEditing ? styles.avatarWrapperEditing : styles.avatarWrapper}
               onClick={() => isEditing && document.getElementById("avatar-upload").click()}
@@ -320,8 +478,6 @@ const Profile = () => {
               ) : (
                 <div className={styles.avatarPlaceholder}>{firstName.charAt(0).toUpperCase()}</div>
               )}
-
-        
             </div>
           </div>
         </div>

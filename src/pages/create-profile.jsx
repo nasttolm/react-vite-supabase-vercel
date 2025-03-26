@@ -12,7 +12,6 @@ import InputLabel from "@mui/material/InputLabel"
 import supabase from "../utils/supabase"
 import styles from "../styles/user-profile.module.css"
 
-
 const CreateProfile = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -21,13 +20,17 @@ const CreateProfile = () => {
   // Profile data
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
+  const [nickname, setNickname] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [avatarFile, setAvatarFile] = useState(null)
-  
+
   // Notification settings
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [notificationDay, setNotificationDay] = useState("sunday")
   const [notificationTime, setNotificationTime] = useState("18:00")
+
+  // Nickname validation state
+  const [isNicknameValid, setIsNicknameValid] = useState(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -66,6 +69,20 @@ const CreateProfile = () => {
     }
   }
 
+  const validateNickname = async (value) => {
+    if (!value.trim()) return false
+
+    // Check if nickname is already taken
+    const { data, error } = await supabase.from("user_profiles").select("id").eq("nickname", value).maybeSingle()
+
+    if (error) {
+      console.error("Error checking nickname:", error)
+      return false
+    }
+
+    return !data // Return true if nickname is available (data is null)
+  }
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -73,6 +90,26 @@ const CreateProfile = () => {
     if (!firstName.trim()) {
       toast.error("First name is required")
       return
+    }
+
+    if (!nickname.trim()) {
+      toast.error("Nickname is required")
+      return
+    }
+
+    // Check if nickname is valid
+    if (isNicknameValid === false) {
+      toast.error("This nickname is already taken. Please choose another one.")
+      return
+    }
+
+    // If we haven't validated the nickname yet, do it now
+    if (isNicknameValid === null) {
+      const isValid = await validateNickname(nickname)
+      if (!isValid) {
+        toast.error("This nickname is already taken. Please choose another one.")
+        return
+      }
     }
 
     try {
@@ -85,32 +122,30 @@ const CreateProfile = () => {
         const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
         const filePath = `avatars/${fileName}`
 
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, avatarFile)
+        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, avatarFile)
 
         if (uploadError) throw uploadError
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(filePath)
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
         uploadedAvatarUrl = publicUrl
       }
 
-      const { error } = await supabase
-        .from("user_profiles")
-        .insert({
-          id: user.id,
-          first_name: firstName,
-          last_name: lastName || null,
-          avatar_url: uploadedAvatarUrl,
-          notification_settings: {
-            enabled: notificationsEnabled,
-            day: notificationDay,
-            time: notificationTime
-          }
-        })
+      const { error } = await supabase.from("user_profiles").insert({
+        id: user.id,
+        first_name: firstName,
+        last_name: lastName || null,
+        nickname: nickname,
+        avatar_url: uploadedAvatarUrl,
+        notification_settings: {
+          enabled: notificationsEnabled,
+          day: notificationDay,
+          time: notificationTime,
+        },
+        nickname_updated_at: new Date().toISOString(),
+      })
 
       if (error) throw error
 
@@ -127,7 +162,7 @@ const CreateProfile = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Create Your Profile</h1>
-      
+
       <form onSubmit={handleSubmit}>
         <div className={styles.formLayout}>
           <div className={styles.formLeft}>
@@ -154,8 +189,24 @@ const CreateProfile = () => {
               />
             </div>
 
-            <div className={styles.sectionTitle}>Notification Settings</div>
-            
+            <div className={styles.inputGroup}>
+              <TextField
+                fullWidth
+                label="Nickname"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                required
+                variant="outlined"
+                className={styles.input}
+                helperText="Choose a unique nickname for your profile. You can only change it once every 24 hours."
+              />
+            </div>
+
+            <div className={styles.sectionTitle}>
+              Notification Settings
+              <span className={styles.comingSoon}>COMING SOON</span>
+            </div>
+
             <div className={styles.notificationSettings}>
               <FormControlLabel
                 control={
@@ -190,7 +241,6 @@ const CreateProfile = () => {
                     </FormControl>
                   </div>
 
-                  {/* Изменение: заменен выпадающий список на поле ввода времени */}
                   <div className={styles.selectWrapper}>
                     <TextField
                       fullWidth
@@ -210,6 +260,10 @@ const CreateProfile = () => {
                   </div>
                 </>
               )}
+              <p className={styles.notificationNote}>
+                You can configure notification settings now, but notifications are currently under development and will
+                not be sent until the feature is fully implemented.
+              </p>
             </div>
           </div>
 
@@ -221,11 +275,8 @@ const CreateProfile = () => {
               onChange={handleAvatarChange}
               style={{ display: "none" }}
             />
-            
-            <div 
-              className={styles.avatarWrapper}
-              onClick={() => document.getElementById("avatar-upload").click()}
-            >
+
+            <div className={styles.avatarWrapper} onClick={() => document.getElementById("avatar-upload").click()}>
               {avatarUrl ? (
                 <img src={avatarUrl || "/placeholder.svg"} alt="Profile" className={styles.avatarImage} />
               ) : (
@@ -253,8 +304,8 @@ const CreateProfile = () => {
             disabled={loading}
             className={styles.button}
             style={{
-              backgroundColor: '#ff5722',
-              color: 'white'
+              backgroundColor: "#ff5722",
+              color: "white",
             }}
           >
             {loading ? "Creating..." : "Create Profile"}
@@ -266,3 +317,4 @@ const CreateProfile = () => {
 }
 
 export default CreateProfile
+
