@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -43,6 +45,7 @@ const CreateRecipe = () => {
   const [imageFile, setImageFile] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingIngredient, setIsCreatingIngredient] = useState(false)
+  const [apiLimitReached, setApiLimitReached] = useState(false)
 
   // Load categories when component mounts
   useEffect(() => {
@@ -80,12 +83,28 @@ const CreateRecipe = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchIngredientQuery.trim().length > 0) {
-        // Changed from > 2 to > 0
         try {
-          const results = await searchIngredients(searchIngredientQuery)
-          setSearchResults(results || [])
+          const response = await searchIngredients(searchIngredientQuery)
+
+          // Check if we got an object with results property or just an array
+          const results = response.results || response
+          setSearchResults(results)
+
+          // Handle API errors
+          if (response.apiError) {
+            if (response.apiLimitReached) {
+              setApiLimitReached(true)
+              console.warn("API rate limit reached. Showing local ingredients only.")
+            } else {
+              console.warn("Failed to get ingredients from external database. Showing local results only.")
+            }
+          } else {
+            setApiLimitReached(false)
+          }
         } catch (error) {
           console.error("Error searching ingredients:", error)
+          toast.error("Error searching ingredients: " + (error.message || "Unknown error"))
+          setSearchResults([])
         }
       } else {
         setSearchResults([])
@@ -95,38 +114,72 @@ const CreateRecipe = () => {
     return () => clearTimeout(delayDebounceFn)
   }, [searchIngredientQuery])
 
-  // Handle selecting an ingredient from search results
+  // Update handleSelectIngredient function to show calorie information
   const handleSelectIngredient = async (ingredient) => {
     try {
       // If the ingredient is from Spoonacular, we need to get detailed information
       if (ingredient.source === "spoonacular") {
         setIsLoading(true)
+        toast.loading("Getting nutrition information...", { id: "nutrition-info" })
 
-        // Get detailed information, including calories
-        const detailedIngredient = await getIngredientInfo(ingredient.id)
+        try {
+          // Get detailed information, including calories
+          const detailedIngredient = await getIngredientInfo(ingredient.id)
 
-        // Set the selected ingredient with full information
-        setSelectedIngredient(detailedIngredient)
-        setSearchIngredientQuery(detailedIngredient.name)
-        setCalories(detailedIngredient.calories.toString())
+          // Set the selected ingredient with full information
+          setSelectedIngredient(detailedIngredient)
+          setSearchIngredientQuery(detailedIngredient.name)
+          setCalories(detailedIngredient.calories.toString())
+
+          // Update the label for calories
+          const caloriesLabel = document.querySelector('label[for="calories"]')
+          if (caloriesLabel && detailedIngredient.metric_unit) {
+            caloriesLabel.textContent = `kcal per ${detailedIngredient.metric_value}${detailedIngredient.metric_unit}`
+          } else if (caloriesLabel) {
+            caloriesLabel.textContent = "kcal per 100g"
+          }
+
+          toast.success("Nutrition information retrieved", { id: "nutrition-info" })
+        } catch (error) {
+          console.error("Error getting Spoonacular ingredient details:", error)
+
+          if (error.message.includes("rate limit") || error.message.includes("API rate limit")) {
+            toast.error("API rate limit reached. Please try again later or use ingredients from our database.", {
+              id: "nutrition-info",
+            })
+          } else {
+            toast.error("Failed to get ingredient information: " + error.message, { id: "nutrition-info" })
+          }
+
+          // Still set the ingredient but without detailed info
+          setSelectedIngredient(ingredient)
+          setSearchIngredientQuery(ingredient.name)
+          setCalories("")
+        }
 
         setIsLoading(false)
       } else {
-        // For local ingredients, keep as before
+        // For local ingredients, keep as before but update the label
         setSelectedIngredient(ingredient)
         setSearchIngredientQuery(ingredient.name)
         setCalories(ingredient.calories.toString())
-      }
 
-      setSearchResults([])
+        // Update the label for calories
+        const caloriesLabel = document.querySelector('label[for="calories"]')
+        if (caloriesLabel && ingredient.metric_unit) {
+          caloriesLabel.textContent = `kcal per ${ingredient.metric_value || 100}${ingredient.metric_unit}`
+        } else if (caloriesLabel) {
+          caloriesLabel.textContent = "kcal per 100g"
+        }
+      }
     } catch (error) {
       console.error("Error getting ingredient details:", error)
-      toast.error("Failed to get ingredient information")
+      toast.error("Failed to get ingredient information", { id: "nutrition-info" })
       setIsLoading(false)
     }
   }
 
-  // Handle adding an ingredient
+  // Update handleAddIngredient function to properly save calories
   const handleAddIngredient = async () => {
     if (!searchIngredientQuery.trim()) {
       toast.error("Please enter an ingredient name")
@@ -144,21 +197,60 @@ const CreateRecipe = () => {
     if (ingredientToAdd && ingredientToAdd.source === "spoonacular") {
       try {
         setIsCreatingIngredient(true)
-        const savedIngredient = await saveSpoonacularIngredient(ingredientToAdd, supabase)
+
+        // Add calories to the ingredient if they're missing
+        const ingredientWithCalories = {
+          ...ingredientToAdd,
+          calories: Number.parseFloat(calories),
+        }
+
+        const savedIngredient = await saveSpoonacularIngredient(ingredientWithCalories, supabase)
 
         // Update ID to local
         ingredientToAdd = {
           ...ingredientToAdd,
           id: savedIngredient.id,
-          source: "local", // Now it's a local ingredient
+          source: "spoonacular", // Keep the source as spoonacular
         }
 
         toast.success(`Ingredient ${ingredientToAdd.name} saved to database`)
       } catch (error) {
         console.error("Error saving Spoonacular ingredient:", error)
-        toast.error("Failed to save ingredient")
-        setIsCreatingIngredient(false)
-        return
+
+        // If error is related to missing calories, show error
+        if (error.message.includes("calorie")) {
+          toast.error(error.message)
+          setIsCreatingIngredient(false)
+          return
+        }
+
+        // For other errors, show warning and let user decide
+        const continueAnyway = window.confirm(
+          `There was a problem saving the ingredient: ${error.message}. Do you want to continue with basic information?`,
+        )
+
+        if (!continueAnyway) {
+          setIsCreatingIngredient(false)
+          return
+        }
+
+        // If user wants to continue, create a local ingredient instead
+        try {
+          const newIngredient = await createIngredient({
+            name: searchIngredientQuery.trim(),
+            calories: Number.parseFloat(calories),
+          })
+          ingredientToAdd = {
+            ...newIngredient,
+            source: "user",
+          }
+          toast.success(`Created new ingredient: ${newIngredient.name}`)
+        } catch (createError) {
+          console.error("Error creating ingredient:", createError)
+          toast.error("Failed to create ingredient")
+          setIsCreatingIngredient(false)
+          return
+        }
       } finally {
         setIsCreatingIngredient(false)
       }
@@ -172,7 +264,10 @@ const CreateRecipe = () => {
           name: searchIngredientQuery.trim(),
           calories: Number.parseFloat(calories),
         })
-        ingredientToAdd = newIngredient
+        ingredientToAdd = {
+          ...newIngredient,
+          source: "user", // Explicitly set source to user
+        }
         toast.success(`Created new ingredient: ${newIngredient.name}`)
       } catch (error) {
         console.error("Error creating ingredient:", error)
@@ -184,17 +279,31 @@ const CreateRecipe = () => {
       }
     }
 
+    // Create ingredient object with measurement units
     const newIngredient = {
       id: ingredientToAdd.id,
       name: ingredientToAdd.name,
       grams: grams,
       calories: Number.parseFloat(calories),
+      metric_unit: ingredientToAdd.metric_unit || "g",
+      metric_value: ingredientToAdd.metric_value || 100,
+      us_unit: ingredientToAdd.us_unit || "oz",
+      us_value: ingredientToAdd.us_value || 3.5,
+      caloriesNote: ingredientToAdd.caloriesNote || `${ingredientToAdd.calories} kcal/100g`,
+      source: ingredientToAdd.source || "user", // Ensure source is preserved
     }
 
     setIngredients([...ingredients, newIngredient])
     setSearchIngredientQuery("")
     setCalories("")
     setSelectedIngredient(null)
+
+    // Reset the label for calories
+    const caloriesLabel = document.querySelector('label[for="calories"]')
+    if (caloriesLabel) {
+      caloriesLabel.textContent = "kcal per 100g"
+    }
+
     toast.success(`Added ${newIngredient.name}`)
   }
 
@@ -423,7 +532,9 @@ const CreateRecipe = () => {
               </div>
 
               <div className={styles.inputGroup}>
-                <label className={styles.label}>kcal per 100g</label>
+                <label className={styles.label} htmlFor="calories">
+                  kcal per 100g
+                </label>
                 <input
                   type="number"
                   id="calories"
@@ -435,58 +546,85 @@ const CreateRecipe = () => {
                   placeholder="Calories"
                 />
               </div>
+            </div>
 
-              <div className={`${styles.inputGroup} ${styles.ingredientSearch}`}>
-                <label className={styles.label}>Search ingredient</label>
-                <div className={styles.searchRow}>
-                  <input
-                    type="text"
-                    id="search-ingredient"
-                    placeholder="Search or create new"
-                    value={searchIngredientQuery}
-                    onChange={(e) => setSearchIngredientQuery(e.target.value)}
-                    className={styles.input}
-                  />
-                  <button
-                    type="button"
-                    className={styles.searchButton}
-                    onClick={handleAddIngredient}
-                    disabled={isCreatingIngredient || !searchIngredientQuery.trim() || !calories}
-                  >
-                    {isCreatingIngredient ? "Creating..." : "Add Ingredient"}
-                  </button>
-                </div>
-
-                {searchResults.length > 0 && (
-                  <div className={styles.searchResults}>
-                    {searchResults.map((result) => (
-                      <div
-                        key={result.id}
-                        className={styles.searchResultItem}
-                        onClick={() => handleSelectIngredient(result)}
-                      >
-                        <div className={styles.resultContent}>
-                          {result.name} 
-                          {result.calories 
-                            ? `(${result.calories} kcal/100g)` 
-                            : result.source === "spoonacular" 
-                              ? <span className={styles.caloriesNote}>(calories will be available after selection)</span> 
-                              : ""
-                          }
-                        </div>
-                        {result.source === "spoonacular" && <div className={styles.resultSource}>Spoonacular</div>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {searchIngredientQuery.trim().length > 0 && searchResults.length === 0 && (
-                  <div className={styles.searchResults}>
-                    <div className={`${styles.searchResultItem} ${styles.noResults}`}>
-                      No ingredients found. Enter calories to create a new one.
-                    </div>
-                  </div>
-                )}
+            {apiLimitReached && (
+              <div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke=" #f44336"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>API rate limit reached. Showing local ingredients only. Some features may be limited.</span>
               </div>
+            )}
+
+            <div className={`${styles.inputGroup} ${styles.ingredientSearch}`}>
+              <label className={styles.label}>Search ingredient</label>
+              <div className={styles.searchRow}>
+                <input
+                  type="text"
+                  id="search-ingredient"
+                  placeholder="Search or create new"
+                  value={searchIngredientQuery}
+                  onChange={(e) => setSearchIngredientQuery(e.target.value)}
+                  className={styles.input}
+                />
+                <button
+                  type="button"
+                  className={styles.searchButton}
+                  onClick={handleAddIngredient}
+                  disabled={isCreatingIngredient || !searchIngredientQuery.trim() || !calories}
+                >
+                  {isCreatingIngredient ? "Creating..." : "Add Ingredient"}
+                </button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className={styles.searchResults}>
+                  {searchResults.map((result) => (
+                    <div
+                      key={result.id}
+                      className={styles.searchResultItem}
+                      onClick={() => handleSelectIngredient(result)}
+                    >
+                      <div className={styles.resultContent}>
+                        {result.name}
+                        {result.calories ? (
+                          result.caloriesNote ? (
+                            `(${result.caloriesNote})`
+                          ) : (
+                            `(${result.calories} kcal/100g)`
+                          )
+                        ) : result.source === "spoonacular" ? (
+                          <span className={styles.caloriesNote}>(calories will be available after selection)</span>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                      {result.source === "spoonacular" && <div className={styles.resultSource}>Spoonacular</div>}
+                      {result.source === "user" && <div className={styles.resultSource}>User</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchIngredientQuery.trim().length > 0 && searchResults.length === 0 && (
+                <div className={styles.searchResults}>
+                  <div className={`${styles.searchResultItem} ${styles.noResults}`}>
+                    No ingredients found. Enter calories to create a new one.
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className={styles.ingredientsList}>
@@ -494,7 +632,12 @@ const CreateRecipe = () => {
                 <div key={index} className={styles.ingredientPill}>
                   {ingredient.name}
                   <br />
-                  {ingredient.grams}g, {ingredient.calories} kcal/100g
+                  {ingredient.grams}g, {ingredient.caloriesNote || `${ingredient.calories} kcal/100g`}
+                  {ingredient.source && (
+                    <span className={styles.ingredientSource}>
+                      {ingredient.source === "spoonacular" ? " (Spoonacular)" : " (User)"}
+                    </span>
+                  )}
                   <button type="button" className={styles.removeButton} onClick={() => handleRemoveIngredient(index)}>
                     ×
                   </button>
@@ -649,3 +792,4 @@ const CreateRecipe = () => {
 }
 
 export default CreateRecipe
+

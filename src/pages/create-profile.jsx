@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -30,6 +28,9 @@ const CreateProfile = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [notificationDay, setNotificationDay] = useState("sunday")
   const [notificationTime, setNotificationTime] = useState("18:00")
+
+  // Nickname validation state
+  const [isNicknameValid, setIsNicknameValid] = useState(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -96,11 +97,19 @@ const CreateProfile = () => {
       return
     }
 
-    // Check if nickname is available
-    const isNicknameAvailable = await validateNickname(nickname)
-    if (!isNicknameAvailable) {
+    // Check if nickname is valid
+    if (isNicknameValid === false) {
       toast.error("This nickname is already taken. Please choose another one.")
       return
+    }
+
+    // If we haven't validated the nickname yet, do it now
+    if (isNicknameValid === null) {
+      const isValid = await validateNickname(nickname)
+      if (!isValid) {
+        toast.error("This nickname is already taken. Please choose another one.")
+        return
+      }
     }
 
     try {
@@ -135,6 +144,7 @@ const CreateProfile = () => {
           day: notificationDay,
           time: notificationTime,
         },
+        nickname_updated_at: new Date().toISOString(),
       })
 
       if (error) throw error
@@ -188,11 +198,14 @@ const CreateProfile = () => {
                 required
                 variant="outlined"
                 className={styles.input}
-                helperText="Choose a unique nickname for your profile"
+                helperText="Choose a unique nickname for your profile. You can only change it once every 24 hours."
               />
             </div>
 
-            <div className={styles.sectionTitle}>Notification Settings</div>
+            <div className={styles.sectionTitle}>
+              Notification Settings
+              <span className={styles.comingSoon}>COMING SOON</span>
+            </div>
 
             <div className={styles.notificationSettings}>
               <FormControlLabel
@@ -228,7 +241,6 @@ const CreateProfile = () => {
                     </FormControl>
                   </div>
 
-                  
                   <div className={styles.selectWrapper}>
                     <TextField
                       fullWidth
@@ -248,6 +260,10 @@ const CreateProfile = () => {
                   </div>
                 </>
               )}
+              <p className={styles.notificationNote}>
+                You can configure notification settings now, but notifications are currently under development and will
+                not be sent until the feature is fully implemented.
+              </p>
             </div>
           </div>
 
@@ -265,7 +281,7 @@ const CreateProfile = () => {
                 <img src={avatarUrl || "/placeholder.svg"} alt="Profile" className={styles.avatarImage} />
               ) : (
                 <div className={styles.avatarPlaceholder}>
-                  <svg width="32" height="32" viewBox="0 0 0 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M12 5V19M5 12H19"
                       stroke="currentColor"

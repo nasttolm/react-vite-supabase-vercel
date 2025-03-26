@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
@@ -10,6 +8,7 @@ import { fetchAllRecipes, fetchAllDiets, fetchAllCategories, isRecipeFavorited }
 import { generateMealPlan, generateShoppingList } from "../utils/supabase-planner"
 import { getRecipeById } from "../utils/supabase-recipe-page"
 import { fetchSavedMealPlans, deleteMealPlan } from "../utils/supabase-meal-plans"
+import RecipeCard from "../components/RecipeCard"
 
 // Days of week constants
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -726,39 +725,10 @@ export default function SupabasePlanner() {
                                   </h4>
                                   {meal ? (
                                     <div
-                                      className={styles.recipeCard}
+                                      className={styles.recipeCardWrapper}
                                       onClick={() => navigateToRecipe(meal.id, meal.servings)}
                                     >
-                                      <div className={styles.recipeImageContainer}>
-                                        <img
-                                          src={meal.image_url || "/placeholder.svg"}
-                                          alt={meal.title}
-                                          className={styles.recipeImage}
-                                        />
-                                        {/* Debug information */}
-                                        {console.log("Meal favorited status:", meal.id, meal.isFavorited)}
-                                      </div>
-                                      <div className={styles.recipeInfo}>
-                                        <h5 className={styles.recipeTitle}>
-                                          {meal.title}
-                                          {meal.isFavorited && (
-                                            <svg
-                                              width="16"
-                                              height="16"
-                                              viewBox="0 0 24 24"
-                                              fill="#ff5722"
-                                              stroke="#ff5722"
-                                              strokeWidth="2"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              className={styles.titleFavoriteIcon}
-                                            >
-                                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                            </svg>
-                                          )}
-                                        </h5>
-                                        <p className={styles.recipeTime}>{meal.cooking_time || "30"} min</p>
-                                      </div>
+                                      <RecipeCard recipe={meal} />
                                     </div>
                                   ) : (
                                     <p className={styles.noMeal}>No recipe</p>
@@ -781,9 +751,6 @@ export default function SupabasePlanner() {
               <p className={styles.emptyStateDescription}>
                 Configure parameters in the sidebar and click "Create Meal Plan"
               </p>
-              <div className={styles.emptyStateImage}>
-                <img src="/placeholder.svg" alt="Meal planning" width={300} height={200} />
-              </div>
             </div>
           </div>
         )}
