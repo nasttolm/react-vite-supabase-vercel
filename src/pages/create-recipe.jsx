@@ -95,12 +95,13 @@ const CreateRecipe = () => {
     return () => clearTimeout(delayDebounceFn)
   }, [searchIngredientQuery])
 
-  // Handle selecting an ingredient from search results
+  // Update handleSelectIngredient function to show calorie information
   const handleSelectIngredient = async (ingredient) => {
     try {
       // If the ingredient is from Spoonacular, we need to get detailed information
       if (ingredient.source === "spoonacular") {
         setIsLoading(true)
+        toast.loading("Getting nutrition information...", { id: "nutrition-info" })
 
         // Get detailed information, including calories
         const detailedIngredient = await getIngredientInfo(ingredient.id)
@@ -110,23 +111,38 @@ const CreateRecipe = () => {
         setSearchIngredientQuery(detailedIngredient.name)
         setCalories(detailedIngredient.calories.toString())
 
+        // Update the label for calories
+        const caloriesLabel = document.querySelector('label[for="calories"]')
+        if (caloriesLabel && detailedIngredient.metric_unit) {
+          caloriesLabel.textContent = `kcal per ${detailedIngredient.metric_value}${detailedIngredient.metric_unit}`
+        } else if (caloriesLabel) {
+          caloriesLabel.textContent = "kcal per 100g"
+        }
+
         setIsLoading(false)
+        toast.success("Nutrition information retrieved", { id: "nutrition-info" })
       } else {
-        // For local ingredients, keep as before
+        // For local ingredients, keep as before but update the label
         setSelectedIngredient(ingredient)
         setSearchIngredientQuery(ingredient.name)
         setCalories(ingredient.calories.toString())
-      }
 
-      setSearchResults([])
+        // Update the label for calories
+        const caloriesLabel = document.querySelector('label[for="calories"]')
+        if (caloriesLabel && ingredient.metric_unit) {
+          caloriesLabel.textContent = `kcal per ${ingredient.metric_value || 100}${ingredient.metric_unit}`
+        } else if (caloriesLabel) {
+          caloriesLabel.textContent = "kcal per 100g"
+        }
+      }
     } catch (error) {
       console.error("Error getting ingredient details:", error)
-      toast.error("Failed to get ingredient information")
+      toast.error("Failed to get ingredient information", { id: "nutrition-info" })
       setIsLoading(false)
     }
   }
 
-  // Handle adding an ingredient
+  // Update handleAddIngredient function to properly save calories
   const handleAddIngredient = async () => {
     if (!searchIngredientQuery.trim()) {
       toast.error("Please enter an ingredient name")
@@ -150,7 +166,7 @@ const CreateRecipe = () => {
         ingredientToAdd = {
           ...ingredientToAdd,
           id: savedIngredient.id,
-          source: "local", // Now it's a local ingredient
+          source: "spoonacular", // Keep the source as spoonacular
         }
 
         toast.success(`Ingredient ${ingredientToAdd.name} saved to database`)
@@ -172,7 +188,10 @@ const CreateRecipe = () => {
           name: searchIngredientQuery.trim(),
           calories: Number.parseFloat(calories),
         })
-        ingredientToAdd = newIngredient
+        ingredientToAdd = {
+          ...newIngredient,
+          source: "user", // Explicitly set source to user
+        }
         toast.success(`Created new ingredient: ${newIngredient.name}`)
       } catch (error) {
         console.error("Error creating ingredient:", error)
@@ -184,17 +203,31 @@ const CreateRecipe = () => {
       }
     }
 
+    // Create ingredient object with measurement units
     const newIngredient = {
       id: ingredientToAdd.id,
       name: ingredientToAdd.name,
       grams: grams,
       calories: Number.parseFloat(calories),
+      metric_unit: ingredientToAdd.metric_unit || "g",
+      metric_value: ingredientToAdd.metric_value || 100,
+      us_unit: ingredientToAdd.us_unit || "oz",
+      us_value: ingredientToAdd.us_value || 3.5,
+      caloriesNote: ingredientToAdd.caloriesNote || `${ingredientToAdd.calories} kcal/100g`,
+      source: ingredientToAdd.source || "user", // Ensure source is preserved
     }
 
     setIngredients([...ingredients, newIngredient])
     setSearchIngredientQuery("")
     setCalories("")
     setSelectedIngredient(null)
+
+    // Reset the label for calories
+    const caloriesLabel = document.querySelector('label[for="calories"]')
+    if (caloriesLabel) {
+      caloriesLabel.textContent = "kcal per 100g"
+    }
+
     toast.success(`Added ${newIngredient.name}`)
   }
 
@@ -466,15 +499,21 @@ const CreateRecipe = () => {
                         onClick={() => handleSelectIngredient(result)}
                       >
                         <div className={styles.resultContent}>
-                          {result.name} 
-                          {result.calories 
-                            ? `(${result.calories} kcal/100g)` 
-                            : result.source === "spoonacular" 
-                              ? <span className={styles.caloriesNote}>(calories will be available after selection)</span> 
-                              : ""
-                          }
+                          {result.name}
+                          {result.calories ? (
+                            result.caloriesNote ? (
+                              `(${result.caloriesNote})`
+                            ) : (
+                              `(${result.calories} kcal/100g)`
+                            )
+                          ) : result.source === "spoonacular" ? (
+                            <span className={styles.caloriesNote}>(calories will be available after selection)</span>
+                          ) : (
+                            ""
+                          )}
                         </div>
                         {result.source === "spoonacular" && <div className={styles.resultSource}>Spoonacular</div>}
+                        {result.source === "user" && <div className={styles.resultSource}>User</div>}
                       </div>
                     ))}
                   </div>
@@ -494,7 +533,12 @@ const CreateRecipe = () => {
                 <div key={index} className={styles.ingredientPill}>
                   {ingredient.name}
                   <br />
-                  {ingredient.grams}g, {ingredient.calories} kcal/100g
+                  {ingredient.grams}g, {ingredient.caloriesNote || `${ingredient.calories} kcal/100g`}
+                  {ingredient.source && (
+                    <span className={styles.ingredientSource}>
+                      {ingredient.source === "spoonacular" ? " (Spoonacular)" : " (User)"}
+                    </span>
+                  )}
                   <button type="button" className={styles.removeButton} onClick={() => handleRemoveIngredient(index)}>
                     ×
                   </button>
@@ -649,3 +693,4 @@ const CreateRecipe = () => {
 }
 
 export default CreateRecipe
+
