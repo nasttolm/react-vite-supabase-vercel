@@ -25,6 +25,7 @@ const RecipePage = () => {
     async function loadRecipe() {
       try {
         setLoading(true)
+        console.log("Loading recipe with ID:", id)
         const recipeData = await getRecipeById(id)
         console.log("Loaded recipe:", recipeData)
         setRecipe(recipeData)
@@ -119,22 +120,77 @@ const RecipePage = () => {
   }
 
   // Format ingredients from the recipe data with adjusted amounts based on servings
-  const formattedIngredients = recipe.ingredients.map((item) => {
-    // Calculate the scaling factor based on current vs original servings
-    const scalingFactor = currentServings / (recipe.servings || 1)
-    const scaledGrams = Number.parseFloat(item.grams) * scalingFactor
-
-    return {
-      name: item.ingredients.name,
-      amount: `${scaledGrams.toFixed(1)}g`,
-      calories: item.ingredients.calories,
-      grams: scaledGrams,
+  const formattedIngredients = (() => {
+    // Check if ingredients exist and are in an array
+    if (!recipe.ingredients || !Array.isArray(recipe.ingredients) || recipe.ingredients.length === 0) {
+      console.log("No ingredients found or invalid ingredients array")
+      return []
     }
-  })
 
-  // Format dietary tags - using the same approach as ingredients
-  const dietaryTags =
-    recipe.diets && recipe.diets.length > 0 ? recipe.diets.map((item) => item.diets.name).filter(Boolean) : []
+    return recipe.ingredients.map((item) => {
+      // Check if item exists
+      if (!item) {
+        console.log("Invalid ingredient item: undefined or null")
+        return {
+          name: "Unknown ingredient",
+          amount: "0g",
+          calories: 0,
+          grams: 0,
+        }
+      }
+
+      // Check if item.ingredients exists
+      if (!item.ingredients) {
+        console.log("Invalid ingredient item: missing ingredients property", item)
+        return {
+          name: "Unknown ingredient",
+          amount: `${item.grams || 0}g`,
+          calories: 0,
+          grams: item.grams || 0,
+        }
+      }
+
+      // Calculate the scaling factor based on current vs original servings
+      const scalingFactor = currentServings / (recipe.servings || 1)
+      const scaledGrams = Number.parseFloat(item.grams || 0) * scalingFactor
+
+      return {
+        name: item.ingredients.name || "Unknown ingredient",
+        amount: `${scaledGrams.toFixed(1)}g`,
+        calories: item.ingredients.calories || 0,
+        grams: scaledGrams,
+      }
+    })
+  })()
+
+  // Format dietary tags with proper validation
+  const dietaryTags = (() => {
+    // Check if diets exist and are in an array
+    if (!recipe.diets || !Array.isArray(recipe.diets) || recipe.diets.length === 0) {
+      console.log("No diets found or invalid diets array")
+      return []
+    }
+
+    return recipe.diets
+      .filter((item) => item !== null && item !== undefined) // Filter out null/undefined items
+      .map((item) => {
+        // If item is an object with a name property
+        if (item && typeof item === "object" && item.name) {
+          return item.name
+        }
+        // If item has a diets property with a name
+        if (item && typeof item === "object" && item.diets && item.diets.name) {
+          return item.diets.name
+        }
+        // If item is a string
+        if (typeof item === "string") {
+          return item
+        }
+        // Default fallback
+        return "Unknown diet"
+      })
+      .filter(Boolean) // Remove any empty strings
+  })()
 
   // Get category name - now directly from the recipe object
   const categoryName = recipe.categoryName || "Uncategorized"
@@ -151,6 +207,31 @@ const RecipePage = () => {
 
   // Round total calories to whole number
   const roundedTotalCalories = Math.round(totalCalories)
+
+  // Ensure steps is an array
+  const recipeSteps = (() => {
+    if (!recipe.steps) {
+      return ["No steps available for this recipe."]
+    }
+
+    if (Array.isArray(recipe.steps)) {
+      return recipe.steps.length > 0 ? recipe.steps : ["No steps available for this recipe."]
+    }
+
+    if (typeof recipe.steps === "string") {
+      try {
+        const parsedSteps = JSON.parse(recipe.steps)
+        return Array.isArray(parsedSteps) && parsedSteps.length > 0
+          ? parsedSteps
+          : ["No steps available for this recipe."]
+      } catch (e) {
+        console.error("Error parsing steps:", e)
+        return [recipe.steps]
+      }
+    }
+
+    return ["No steps available for this recipe."]
+  })()
 
   return (
     <div className={`${globalStyles.body} ${styles.container}`}>
@@ -198,7 +279,7 @@ const RecipePage = () => {
             />
           </span>
           <span>Category: {categoryName}</span>
-          <span>Author: @{recipe.authorNickname}</span>
+          <span>Author: @{recipe.authorNickname || "Unknown"}</span>
         </div>
 
         {dietaryTags.length > 0 && (
@@ -230,26 +311,30 @@ const RecipePage = () => {
 
           <div className={styles.ingredientsSection}>
             <h2>Ingredients</h2>
-            <ul className={styles.ingredientsList}>
-              {formattedIngredients.map((ingredient, index) => (
-                <li key={index}>
-                  {ingredient.amount} {ingredient.name} ({ingredient.calories} kcal/100g)
-                </li>
-              ))}
-            </ul>
+            {formattedIngredients.length > 0 ? (
+              <ul className={styles.ingredientsList}>
+                {formattedIngredients.map((ingredient, index) => (
+                  <li key={index}>
+                    {ingredient.amount} {ingredient.name} ({ingredient.calories} kcal/100g)
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No ingredients available for this recipe.</p>
+            )}
           </div>
         </div>
 
         <div className={styles.recipeDetails}>
           <div className={styles.descriptionSection}>
             <h2>Description</h2>
-            <p>{recipe.description}</p>
+            <p>{recipe.description || "No description available."}</p>
           </div>
 
           <div className={styles.preparationSection}>
             <h2>Preparation</h2>
             <div className={styles.stepsList}>
-              {recipe.steps.map((step, index) => (
+              {recipeSteps.map((step, index) => (
                 <div key={index} className={styles.stepItem}>
                   <span className={styles.stepNumber}>Step {index + 1}: </span>
                   <span className={styles.stepText}>{step}</span>
