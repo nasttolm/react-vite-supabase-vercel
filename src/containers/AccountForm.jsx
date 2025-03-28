@@ -1,14 +1,14 @@
-import { useFormik } from "formik"
-import * as yup from "yup"
-import Button from "@mui/material/Button"
-import PropTypes from "prop-types"
-import TextField from "@mui/material/TextField"
-import styles from "../styles/auth.module.css"
-import Logo from "../../public/Logo.svg"
-import { useNavigate } from "react-router"
-import { useState } from "react"
-import supabase from "../utils/supabase"
-import toast from "react-hot-toast"
+import { useFormik } from "formik";
+import * as yup from "yup";
+import Button from "@mui/material/Button";
+import PropTypes from "prop-types";
+import TextField from "@mui/material/TextField";
+import styles from "../styles/auth.module.css";
+import Logo from "../../public/Logo.svg";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import supabase from "../utils/supabase";
+import toast from "react-hot-toast";
 
 const validationSchema = yup.object({
   email: yup.string("Enter your email").email("Enter a valid email").required("Email is required"),
@@ -16,13 +16,13 @@ const validationSchema = yup.object({
     .string("Enter your password")
     .min(8, "Password should be of minimum 8 characters length")
     .required("Password is required"),
-})
+});
 
-const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
-  const navigate = useNavigate()
-  const [resetEmailSent, setResetEmailSent] = useState(false)
-  const [resetEmail, setResetEmail] = useState("")
-  const [showResetForm, setShowResetForm] = useState(false)
+const AccountForm = ({ onSubmit, onFacebookAuth = () => {}, isSignUp = false }) => {
+  const navigate = useNavigate();
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [showResetForm, setShowResetForm] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -31,32 +31,32 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      await onSubmit(values.email, values.password)
+      await onSubmit(values.email, values.password);
     },
-  })
+  });
 
   const handleForgotPassword = async () => {
     if (!resetEmail) {
-      toast.error("Please enter your email address")
-      return
+      toast.error("Please enter your email address");
+      return;
     }
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: window.location.origin + "/auth/update-password",
-      })
+      });
 
       if (error) {
-        toast.error(error.message)
+        toast.error(error.message);
       } else {
-        setResetEmailSent(true)
-        toast.success("Password reset email sent. Please check your inbox.")
+        setResetEmailSent(true);
+        toast.success("Password reset email sent. Please check your inbox.");
       }
     } catch (error) {
-      console.error("Password reset error:", error)
-      toast.error("An error occurred while sending the reset email")
+      console.error("Password reset error:", error);
+      toast.error("An error occurred while sending the reset email");
     }
-  }
+  };
 
   return (
     <div className={styles.card}>
@@ -102,7 +102,6 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
         </div>
       ) : (
         <>
-          {/* Facebook Button */}
           <button
             type="button"
             className={styles.facebookButton}
@@ -120,7 +119,6 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
             <span>Continue with Facebook</span>
           </button>
 
-          {/* OR Divider */}
           <div className={styles.divider}>
             <div className={styles.dividerLine}></div>
             <span className={styles.dividerText}>OR</span>
@@ -128,41 +126,47 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
           </div>
 
           <form onSubmit={formik.handleSubmit} className={styles.form}>
-            <TextField
-              fullWidth
-              id="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-              variant="outlined"
-              className={styles.input}
-            />
-            <TextField
-              fullWidth
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
-              variant="outlined"
-              className={styles.input}
-            />
+            <div>
+              <label htmlFor="email">Email</label>
+              <TextField
+                fullWidth
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+                variant="outlined"
+                className={styles.input}
+              />
+            </div>
+            <div>
+              <label htmlFor="password">Password</label>
+              <TextField
+                fullWidth
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.password && Boolean(formik.errors.password)}
+                helperText={formik.touched.password && formik.errors.password}
+                variant="outlined"
+                className={styles.input}
+              />
+            </div>
 
             {!isSignUp && (
               <div className={styles.forgotPassword}>
                 <span
                   className={styles.forgotPasswordLink}
                   onClick={() => {
-                    setResetEmail(formik.values.email)
-                    setShowResetForm(true)
+                    setResetEmail(formik.values.email);
+                    setShowResetForm(true);
                   }}
                   style={{ cursor: "pointer" }}
                 >
@@ -210,19 +214,13 @@ const AccountForm = ({ onSubmit, onFacebookAuth, isSignUp = false }) => {
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
 AccountForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onFacebookAuth: PropTypes.func,
   isSignUp: PropTypes.bool,
-}
+};
 
-AccountForm.defaultProps = {
-  onFacebookAuth: () => {},
-  isSignUp: false,
-}
-
-export default AccountForm
-
+export default AccountForm;

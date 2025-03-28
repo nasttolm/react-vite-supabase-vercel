@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 
 import AccountForm from "../../containers/AccountForm"
@@ -19,7 +19,7 @@ const SignIn = () => {
         navigate("/")
         toast.success("Welcome!")
       } else if (result.error?.message) {
-        toast.error(result.error.message)
+        toast.error('Invalid credentials')
       }
     } catch (error) {
       console.error("Sign in error:", error)
@@ -36,7 +36,7 @@ const SignIn = () => {
       if (error) {
         toast.error(error.message)
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to sign in with Facebook")
     }
   }
