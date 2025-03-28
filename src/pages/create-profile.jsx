@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
