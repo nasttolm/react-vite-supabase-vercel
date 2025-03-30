@@ -35,6 +35,9 @@ const SignUp = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "facebook",
+        options: {
+          redirectTo: 'https://react-vite-supabase-vercel-nasttolm-gmailcoms-projects.vercel.app/create-profile'
+        }
       })
 
       if (error) {
