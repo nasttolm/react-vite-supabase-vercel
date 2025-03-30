@@ -13,6 +13,9 @@ const SignUp = () => {
       const result = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: 'https://react-vite-supabase-vercel-nasttolm-gmailcoms-projects.vercel.app/create-profile'
+        }
       })
 
       if (result.data.user?.identities?.length === 0) {
