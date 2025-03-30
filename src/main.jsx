@@ -51,6 +51,11 @@ createRoot(document.getElementById("root")).render(
               <Route path="/auth/update-password" element={<UpdatePassword />} />
               
               {/* Protected routes */}
+              <Route path="/create-recipe" element={
+                <ProtectedRoute>
+                  <CreateRecipe />
+                </ProtectedRoute>
+              } />
               <Route path="/recipes/:id" element={
                 <ProtectedRoute>
                   <RecipePage />
@@ -69,11 +74,6 @@ createRoot(document.getElementById("root")).render(
               <Route path="/profile/:userId?" element={
                 <ProtectedRoute>
                   <UserProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/create-profile" element={
-                <ProtectedRoute>
-                  <CreateProfile />
                 </ProtectedRoute>
               } />
               <Route path="/planner" element={
