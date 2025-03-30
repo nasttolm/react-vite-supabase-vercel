@@ -20,7 +20,7 @@ const SignUp = () => {
       } else {
         toast.success("Welcome! Please check your inbox to confirm your account.")
         // Redirect to create profile page after signup
-        navigate("/create-profile")
+        navigate("/auth/sign-in")
       }
     } catch (error) {
       console.error("Sign up error:", error)
